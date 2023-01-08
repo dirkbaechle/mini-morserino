@@ -27,15 +27,14 @@
 
 
 #include "morsedefs.h"
-#include "wklfonts.h"         // monospaced fonts in size 12 (regular and bold) for smaller text and 15 for larger text (regular and bold), called :
-                              // DialogInput_plain_12, DialogInput_bold_12 & DialogInput_plain_15, DialogInput_bold_15
+#include "wklfonts.h"         // monospaced fonts in size 12 (regular and bold) for smaller text , called :
+                              // DialogInput_plain_12, DialogInput_bold_12
                               // these fonts were created with this tool: http://oledHeltec.display -> squix.ch/#/home
 #include "abbrev.h"           // common CW abbreviations
 #include "english_words.h"    // common English words
 #include "MorseOutput.h"      // display and sound functions
 #include "MorsePreferences.h" // preferences and persistent storage, snapshots
 #include "MorseMenu.h"        // main menu
-#include "MorseWiFi.h"        // WiFi functions
 #include "goertzel.h"         // Goertzel filter
 #include "MorseDecoder.h"     // Decoder Engine
 
@@ -59,7 +58,6 @@ ClickButton Buttons::volButton(volButtonPin);               // external pullup f
 Decoder keyDecoder(USE_KEY);
 Decoder audioDecoder(USE_AUDIO);
 MorseTable keyerTable;
-Koch koch;
 
 // things for reading the encoder
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
@@ -118,8 +116,6 @@ File file;
 
 /// variable for selecting a hardware configuratipon menu option
 int8_t hwConf = 1;                            // 0 = cancel hw config, 1 = battery measurement calibration, 2 = lora config
-
-boolean kochActive = false;                   // set to true when in Koch trainer mode
 
 //  keyerControl bit definitions
 
@@ -281,10 +277,6 @@ uint8_t cwTxSerial;                                     /// a 6 bit serial numbe
                                                         /// the first two bits in the byte will be the protocol id (CW_TRX_PROTO_VERSION)
 
 
-///////////// Variable for WiFiTrx
-
-IPAddress peerIP;
-
 ////////////////////////////////////////////////////////////////////
 // encoder subroutines
 /// interrupt service routine - needs to be positioned BEFORE all other functions, including setup() and loop()
@@ -377,7 +369,6 @@ void setup()
 // if version cannot be read, we have a new ESP32 and need to write the preferences first
 
   MorsePreferences::readPreferences("morserino");
-  koch.setup(); 
 
  
   pinMode(Vext, OUTPUT);
@@ -578,8 +569,7 @@ void loop() {
                           }
                           
                           break;
-      case loraTrx:      
-      case wifiTrx:       if (doPaddleIambic(leftKey, rightKey)) {
+      case loraTrx:       if (doPaddleIambic(leftKey, rightKey)) {
                               return;                                                        // we are busy keying and so need a very tight loop !
                           }
                           generateCW();
@@ -844,10 +834,6 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                  cwForTx(3);
                  sendWithLora();                        // finalise the string and send it to LoRA
              }
-             else if (morseState == wifiTrx)    {                    // when in Trx mode
-                 cwForTx(3);
-                 sendWithWifi();                        // finalise the string and send it to WiFi
-             }
 
              displayMorse(keyerTable.retrieveSymbol(), false);
              interWordTimer = 4294967000;                       // almost the biggest possible unsigned long number :-) - do not output extra spaces!
@@ -927,7 +913,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
     case KEY_START:
           // Assert key down, start timing, state shared for dit or dah
           pitch = MorseOutput::notes[MorsePreferences::sidetoneFreq];
-          if ((morseState == echoTrainer || morseState == loraTrx || morseState == wifiTrx) && MorsePreferences::echoToneShift != 0) {
+          if ((morseState == echoTrainer || morseState == loraTrx) && MorsePreferences::echoToneShift != 0) {
              pitch = (MorsePreferences::echoToneShift == 1 ? pitch * 18 / 17 : pitch * 17 / 18);        /// one half tone higher or lower, as set in parameters in echo trainer mode
           }
 
@@ -1002,7 +988,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                                    keyerState = IDLE_STATE;               // we are at the end of the character and go back into IDLE STATE
                                    displayMorse(keyerTable.retrieveSymbol(), false);                        // display the decoded morse character(s)
 
-                                   if (morseState == loraTrx || morseState == wifiTrx)
+                                   if (morseState == loraTrx)
                                       cwForTx(0);
 
                                    ++charCounter;                         // count this character
@@ -1012,7 +998,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                                    }
                                    if (MorsePreferences::ACSlength > 0)
                                         acsTimer = millis() + MorsePreferences::ACSlength * ditLength; // prime the ACS timer
-                                   if (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx || morseState == morseTrx)
+                                   if (morseState == morseKeyer || morseState == loraTrx || morseState == morseTrx)
                                       interWordTimer = millis() + 5*ditLength;
                                    else
                                        interWordTimer = millis() + interWordSpace;  // prime the timer to detect a space between characters
@@ -1100,14 +1086,14 @@ void clearPaddleLatches ()
 void setDITstate() {
   keyerState = DIT;
   keyerTable.recordDit();
-  if (morseState == loraTrx || morseState == wifiTrx)
+  if (morseState == loraTrx)
       cwForTx(1);                         // build compressed string for LoRa & Wifi
 }
 
 void setDAHstate() {
   keyerState = DAH;
   keyerTable.recordDah();
-  if (morseState == loraTrx || morseState == wifiTrx)
+  if (morseState == loraTrx)
       cwForTx(2);
 }
 
@@ -1174,19 +1160,13 @@ void initSensors() {
 String getRandomWord( int maxLength) {        //// give me a random English word, max maxLength chars long (1-5) - 0 returns any length
   if (maxLength > 6)
     maxLength = 0;
-    if (kochActive)
-        return koch.getRandomWord(); 
-    else 
-        return EnglishWords::words[random(EnglishWords::WORDS_POINTER[maxLength], EnglishWords::WORDS_NUMBER_OF_ELEMENTS)];
+  return EnglishWords::words[random(EnglishWords::WORDS_POINTER[maxLength], EnglishWords::WORDS_NUMBER_OF_ELEMENTS)];
 }
 
 String getRandomAbbrev( int maxLength) {        //// give me a random CW abbreviation , max maxLength chars long (1-5) - 0 returns any length
   if (maxLength > 6)
     maxLength = 0;
-    if (kochActive)
-        return koch.getRandomAbbrev();
-    else
-        return Abbrev::abbreviations[random(Abbrev::ABBREV_POINTER[maxLength], Abbrev::ABBREV_NUMBER_OF_ELEMENTS)];  
+  return Abbrev::abbreviations[random(Abbrev::ABBREV_POINTER[maxLength], Abbrev::ABBREV_NUMBER_OF_ELEMENTS)];  
 }
 
 // we use substrings as char pool for trainer mode
@@ -1213,12 +1193,7 @@ String getRandomChars(int maxLength, int option) {             /// random char s
     if (maxLength > 6) {                                        // we use a random length!
       maxLength = random(2, maxLength - 3);                     // maxLength is max 10, so random upper limit is 7, means max 6 chars...
     }
-    if (kochActive) {
-      if (option == OPT_KOCH_ADAPTIVE)
-        return koch.getAdaptiveChar(maxLength);
-      else
-        return koch.getRandomChar(maxLength);
-    } else {
+    {
          switch (option) {
           case OPT_NUM: 
           case OPT_NUMPUNCT: 
@@ -1365,7 +1340,7 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
                   //DEBUG("Text left: " + clearText);
 
                 if (MorsePreferences::trainerDisplay == DISPLAY_BY_WORD &&
-                    (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator))
+                    (morseState == loraTrx || morseState == morseGenerator))
                   {
                       printOnDisplay(morseState == morseGenerator ? REGULAR : BOLD,cleanUpProSigns(clearText));
                       clearText = "";
@@ -1395,21 +1370,18 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
             //// no keyOut()
             if (morseState == echoTrainer && MorsePreferences::echoDisplay == DISP_ONLY)
                 genTimer = millis() + 2;      // very short timing
-            else if (morseState != loraTrx && morseState != wifiTrx)
+            else if (morseState != loraTrx)
                 genTimer = millis() + (c == '1' ? ditLength : dahLength);           // start a dit or a dah, acording to the next element
             else 
                 genTimer = millis() + (c == '1' ? rxDitLength : rxDahLength);
             if (morseState == morseGenerator && MorsePreferences::loraTrainerMode >= 1)             // send the element to transmit buffer
                 c == '1' ? cwForTx(1) : cwForTx(2) ; 
-            /// if Koch learn character we show dit or dah
-            if (generatorMode == KOCH_LEARN)
-                printOnDisplay(REGULAR, c == '1' ? "."  : "-");
             silentEcho = (morseState == echoTrainer && MorsePreferences::echoDisplay == DISP_ONLY); // echo mode with no audible prompt
 
             if (silentEcho || stopFlag)                                             // we finished maxSequence and so do start output (otherwise we get a short click)
               ;
             else  {
-                keyOut(true, (morseState != loraTrx && morseState != wifiTrx), pitch(), MorsePreferences::sidetoneVolume);
+                keyOut(true, (morseState != loraTrx), pitch(), MorsePreferences::sidetoneVolume);
             }
             generatorState = KEY_DOWN;                              // next state = key down = dit or dah
 
@@ -1419,7 +1391,7 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
                 return;
             //// otherwise we continue here; stop keying,  and determine the length of the following pause: inter Element, interCharacter or InterWord?
 
-           keyOut(false, (morseState != loraTrx && morseState != wifiTrx), 0, 0);
+           keyOut(false, (morseState != loraTrx), 0, 0);
             if (! CWword.length())   {                                 // we just ended the the word, ...  //// intercept here in Echo Trainer mode or autoStop mode
                 if (morseState == morseGenerator) 
                     autoStop = MorsePreferences::autoStopMode ? halt : nextword;
@@ -1446,13 +1418,12 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
                     }
                 }
                 else { 
-                      genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterWordSpace : interWordSpace) ;  // we need a pause for interWordSpace
+                      genTimer = millis() + ((morseState == loraTrx) ? rxInterWordSpace : interWordSpace) ;  // we need a pause for interWordSpace
                       if (morseState == morseGenerator && MorsePreferences::loraTrainerMode >= 1) {                                   // in generator mode and we want to send with LoRa
                           cwForTx(0);
                           cwForTx(3);                           // as we have just finished a word
                           if (MorsePreferences::loraTrainerMode == 1)
                             sendWithLora();                         // finalise the string and send it to LoRA
-                          else sendWithWifi();                      // or WiFi
                           delay(interCharacterSpace+ditLength);             // we need a slightly longer pause otherwise the receiving end might fall too far behind...
                       } 
                 }
@@ -1464,10 +1435,10 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
                 if (morseState == echoTrainer && MorsePreferences::echoDisplay == DISP_ONLY)
                     genTimer = millis() +1;
                 else            
-                    genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterCharacterSpace : interCharacterSpace);          // pause = intercharacter space
+                    genTimer = millis() + ((morseState == loraTrx) ? rxInterCharacterSpace : interCharacterSpace);          // pause = intercharacter space
              }
              else  {                                                                                                   // we are in the middle of a character
-                genTimer = millis() + ((morseState == loraTrx  || morseState == wifiTrx) ? rxDitLength : ditLength);                              // pause = interelement space
+                genTimer = millis() + ((morseState == loraTrx) ? rxDitLength : ditLength);                              // pause = interelement space
              }
              generatorState = KEY_UP;                               // next state = key up = pause
              break;         
@@ -1489,9 +1460,8 @@ void dispGeneratedChar() {
   static String charString;
   charString.reserve(10);
   
-  if (generatorMode == KOCH_LEARN ||
-          (MorsePreferences::trainerDisplay == DISPLAY_BY_CHAR &&
-          (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator)) ||
+  if ((MorsePreferences::trainerDisplay == DISPLAY_BY_CHAR &&
+          (morseState == loraTrx || morseState == morseGenerator)) ||
           (morseState == echoTrainer && MorsePreferences::echoDisplay != CODE_ONLY ))
       {       /// we need to output the character on the display now  
         if (clearText.charAt(0) == 0xC3) {            //UTF-8!
@@ -1502,13 +1472,7 @@ void dispGeneratedChar() {
           charString = clearText.charAt(0);
           clearText.remove(0,1);
         }
-        if (generatorMode == KOCH_LEARN) {
-            printOnDisplay(REGULAR," ");                      // output a space
-            MorseOutput::clearBuffer();                      // clear the buffer first
-        }
-        printOnDisplay((morseState == loraTrx || morseState == wifiTrx || generatorMode == KOCH_LEARN) ? BOLD : REGULAR, cleanUpProSigns(charString));
-        if (generatorMode == KOCH_LEARN)
-            printOnDisplay(REGULAR," ");                      // output a space
+        printOnDisplay((morseState == loraTrx) ? BOLD : REGULAR, cleanUpProSigns(charString));
       }   //// end display_by_char
       
       ++charCounter;                         // count this character
@@ -1524,7 +1488,7 @@ void fetchNewWord() {
   char numBuffer[16];                // for number to string conversion with sprintf()
 
 
-    if (morseState == loraTrx || morseState == wifiTrx) {       // we check the rxBuffer and see if we received something
+    if (morseState == loraTrx) {       // we check the rxBuffer and see if we received something
        MorseOutput::updateSMeter(0);                                         // at end of word we set S-meter to 0 until we receive something again
        startFirst = false;
        ////// from here: retrieve next CWword from buffer!
@@ -1548,16 +1512,12 @@ void fetchNewWord() {
        }
        else return;                                             // we did not receive anything
                
-    } // end if loraTrx or wifiTrx
+    } // end if loraTrx
     else {
     if ((morseState == morseGenerator) /*&& !MorsePreferences::autoStopMode*/ ) {
         printOnDisplay(REGULAR, " ");    /// in any case, add a blank after the word on the display
     }
     
-    if (generatorMode == KOCH_LEARN) {
-        startFirst = false;
-        echoTrainerState = SEND_WORD;
-    }
     if (startFirst == true)  {                                 /// do the intial sequence in trainer mode, too
         clearText = "vvvA";
         startFirst = false;
@@ -1575,10 +1535,6 @@ void fetchNewWord() {
                                     clearText = echoTrainerWord;
                                 else {
                                     clearText = echoTrainerWord;
-                                    if (generatorMode != KOCH_LEARN) {
-                                        printOnDisplay(INVERSE_REGULAR, cleanUpProSigns(clearText));    //// clean up first!
-                                        printOnDisplay(REGULAR, " ");
-                                    }
                                     goto randomGenerate;
                                 }
                                 break;
@@ -1590,7 +1546,7 @@ void fetchNewWord() {
    
       randomGenerate:       repeats = 0;
                             clearText = "";
-                            if ((MorsePreferences::maxSequence != 0) && (generatorMode != KOCH_LEARN))
+                            if (MorsePreferences::maxSequence != 0)
                               if ( morseState == echoTrainer || ((morseState == morseGenerator) && !MorsePreferences::autoStopMode) ) {
                                 // a case for maxSequence - no maxSequence in autostop mode                         
                                 ++ wordCounter;                                                               // 
@@ -1617,8 +1573,6 @@ void fetchNewWord() {
                                                       break;
                                       case  WORDS:    clearText = getRandomWord(MorsePreferences::wordLength);
                                                       break;
-                                      case  KOCH_LEARN:clearText = koch.getNewChar();
-                                                      break;
                                       case  MIXED:    rv = random(4);
                                                       switch (rv) {
                                                         case  0:  clearText = getRandomWord(MorsePreferences::wordLength);
@@ -1630,18 +1584,6 @@ void fetchNewWord() {
                                                         case  3:  clearText = getRandomChars(1,OPT_PUNCTPRO);        // just a single pro-sign or interpunct
                                                                   break;
                                                       }
-                                                      break;
-                                      case KOCH_MIXED:rv = random(3);
-                                                      switch (rv) {
-                                                        case  0:  clearText = getRandomWord(MorsePreferences::wordLength);
-                                                                  break;
-                                                        case  1:  clearText = getRandomAbbrev(MorsePreferences::abbrevLength);
-                                                                    break;
-                                                        case  2:  clearText = getRandomChars(MorsePreferences::randomLength, OPT_KOCH);        // Koch option!
-                                                                  break;
-                                                      }
-                                                      break;
-                                      case KOCH_ADAPTIVE:clearText = getRandomChars(MorsePreferences::randomLength, OPT_KOCH_ADAPTIVE);
                                                       break;
                                       case PLAYER:    if (MorsePreferences::randomFile)
                                                           skipWords(random(MorsePreferences::randomFile+1));
@@ -1664,7 +1606,7 @@ void fetchNewWord() {
       }
       CWword = generateCWword(clearText);
       echoTrainerWord = clearText;
-    } /// else (= not in loraTrx or wifiTrx mode)
+    } /// else (= not in loraTrx mode)
 } // end of fetchNewWord()
 
 
@@ -1716,7 +1658,7 @@ void displayCWspeed() {
   MorseOutput::printOnStatusLine(false, 3,  numBuf);                                         // effective wpm or rxwpm
   
   if (MorsePreferences::keyermode == STRAIGHTKEY && 
-      (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx ))
+      (morseState == morseKeyer || morseState == loraTrx))
         sprintf(numBuf, "%2i", wpm);  
   else
     sprintf(numBuf, "%2i", (morseState == morseDecoder ? wpm : MorsePreferences::wpm));         // d_wpm (decode) or p_wpm (default)
@@ -1745,8 +1687,6 @@ void updateTopLine() {
   displayCWspeed();                                     // update display of CW speed
   if ((morseState == loraTrx ) || (morseState == morseGenerator  && MorsePreferences::loraTrainerMode == 1))
     MorseOutput::dispLoraLogo();
-  else if ((morseState == wifiTrx) || (morseState == morseGenerator  && MorsePreferences::loraTrainerMode == 2))
-      MorseOutput::dispWifiLogo();
 
   MorseOutput::displayVolume(encoderState == speedSettingMode, MorsePreferences::sidetoneVolume);                                     // sidetone volume
   Heltec.display -> display();
@@ -1778,22 +1718,16 @@ void echoTrainerEval() {
       if (MorsePreferences::echoConf) {
           MorseOutput::soundSignalOK();
       }
-      if (kochActive){
-        koch.decreaseWordProbability(echoTrainerWord);
-      }
       delay(interWordSpace);
       if (MorsePreferences::speedAdapt)
           changeSpeed(1);
     } else {
       echoTrainerState = REPEAT_WORD;
-      if (generatorMode != KOCH_LEARN || echoResponse != "") {
+      if (echoResponse != "") {
           ++errCounter;
           printOnDisplay(BOLD, "ERR");
           if (MorsePreferences::echoConf) {
               MorseOutput::soundSignalERR();
-          }
-          if (kochActive){
-            koch.increaseWordProbability(echoTrainerWord, echoResponse);
           }
       }
       delay(interWordSpace);
@@ -1987,23 +1921,6 @@ void sendWithLora() {           // hand this string over as payload to the LoRA 
   LoRa.endPacket();
   if (morseState == loraTrx)
       LoRa.receive();
-}
-
-void sendWithWifi() {           // hand this string over as payload to the WiFi transceiver
-  // send packet
-//      const char* peerHost = MorsePreferences::wlanTRXPeer.c_str();
-//      IPAddress peerIP;
-//      if (MorsePreferences::wlanTRXPeer.length() == 0) {
-//          peerHost = "255.255.255.255"; // send to local broadcast IP if not set
-//      }
-//      if (!peerIP.fromString(peerHost)) {    // try to interpret the peer as an ip address...
-//          WiFi.hostByName(peerHost, peerIP); // ...and resolve peer into ip address if that fails
-//      }
-  //DEBUG("Send with WiFi! " + String(cwTxBuffer));
-  MorseWiFi::audp.writeTo((uint8_t*)cwTxBuffer, strlen(cwTxBuffer), peerIP, MORSERINOPORT);
-  //MorseWiFi::udp.beginPacket(peerIP, MORSERINOPORT);
-  //MorseWiFi::udp.print(cwTxBuffer);
-  //MorseWiFi::udp.endPacket();
 }
 
 void onLoraReceive(int packetSize){
@@ -2229,7 +2146,7 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
                 noTx = false;
               break;
       case 3: if ( ((morseState == morseKeyer || morseState == morseGenerator) && fromHere) ||
-                   ((morseState == loraTrx || morseState == wifiTrx) && !fromHere) )
+                   ((morseState == loraTrx) && !fromHere) )
                 noTx = false;
       default:  break;
   }
@@ -2361,7 +2278,7 @@ String cleanUpText(String text) {                        // all to lower case, a
   text = utf8umlaut(text);
   
   for (unsigned int i = 0; i<text.length(); ++i) {       // disregard all non-standard characters
-    if ((koch.morserinoKochChars.indexOf(c = text.charAt(i)) != -1) || c == 'P' || c == 'T' )      // P for pause  
+    if ( c == 'P' || c == 'T' )      // P for pause  
       result += c;
   }
   return result;

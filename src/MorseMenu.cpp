@@ -21,7 +21,7 @@ using namespace MorseMenu;
 //////// variables and constants for the modus menu
 
 
-const uint8_t menuN = 43;     // no of menu items +1
+const uint8_t menuN = 21;     // no of menu items +1
 
 const String menuText [menuN] = {
   "",
@@ -43,38 +43,13 @@ const String menuText [menuN] = {
     "Mixed",
     "File Player",
   
-  "Koch Trainer", // 16
-    "Select Lesson",
-    "Learn New Chr",
-    "CW Generator",   // 19
-      "Random",   // 20
-      "CW Abbrevs",
-      "English Words",
-      "Mixed",
-    "Echo Trainer",   // 24
-      "Random",
-      "CW Abbrevs",
-      "English Words",
-      "Mixed",
-      "Adapt. Rand.",
-  
-  "Transceiver",    // 30
+  "Transceiver",    // 16
     "LoRa Trx",
-    "WiFi Trx",
     "iCW/Ext Trx",
   
-  "CW Decoder",     // 34
-
-  "WiFi Functions", // 35
-    "Disp MAC Addr",
-    "Config WiFi",
-    "Check WiFi",
-    "Upload File",
-    "Update Firmw", //40
-    "Wifi Select", //41
+  "CW Decoder",     // 19
   
-  
-  "Go To Sleep" } ; // 42
+  "Go To Sleep" } ; // 20
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
        
@@ -89,40 +64,18 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {1,_genWords,_genMixed,_gen,0},                       // 6 gen calls
   {1,_genCalls,_genPlayer,_gen,0},                      // 7 gen mixed
   {1,_genMixed,_genRand,_gen,0},                        // 8 gen player
-  {0,_gen,_koch,_dummy,_echoRand},                      // 9 echo tr
+  {0,_gen,_trx,_dummy,_echoRand},                      // 9 echo tr
   {1,_echoPlayer,_echoAbb,_echo,0},                     // 10 echo random
   {1,_echoRand,_echoWords,_echo,0},                     // 11 echo abb
   {1,_echoAbb,_echoCalls,_echo,0},                      // 12 echo words
   {1,_echoWords,_echoMixed,_echo,0},                    // 13 echo calls
   {1,_echoCalls,_echoPlayer,_echo,0},                   // 14 echo mixed
   {1,_echoMixed,_echoRand,_echo,0},                     // 15 echo player
-  {0,_echo,_trx,_dummy,_kochSel},                       // 16 koch
-  {1,_kochEcho,_kochLearn,_koch,0},                     // 17 koch select
-  {1,_kochSel,_kochGen,_koch,0},                        // 18 koch learn new
-  {1,_kochLearn,_kochEcho,_koch,_kochGenRand},          // 19 koch gen
-  {2,_kochGenMixed,_kochGenAbb,_kochGen,0},             // 20 koch gen random
-  {2,_kochGenRand,_kochGenWords,_kochGen,0},            // 21 koch gen abb
-  {2,_kochGenAbb,_kochGenMixed,_kochGen,0},             // 22 koch gen words
-  {2,_kochGenWords,_kochGenRand,_kochGen,0},            // 23 koch gen mixed
-  {1,_kochGen,_kochSel,_koch,_kochEchoRand},            // 24 koch echo
-  {2,_kochEchoAdaptive,_kochEchoAbb,_kochEcho,0},       // 25 koch echo random
-  {2,_kochEchoRand,_kochEchoWords,_kochEcho,0},         // 26 koch echo abb
-  {2,_kochEchoAbb,_kochEchoMixed,_kochEcho,0},          // 27 koch echo words
-  {2,_kochEchoWords,_kochEchoAdaptive,_kochEcho,0},     // 28 koch echo mixed
-  {2,_kochEchoMixed,_kochEchoRand,_kochEcho,0},         // 29 koch echo adaptive
-  {0,_koch,_decode,_dummy,_trxLora},                    // 30 transceiver
-  {1,_trxIcw,_trxWifi,_trx,0},                          // 31 lora
-  {1,_trxLora,_trxIcw,_trx,0},                          // 32 wifi
-  {1,_trxWifi,_trxLora,_trx,0},                         // 33 icw
-  {0,_trx,_wifi,_dummy,0},                              // 34 decoder
-  {0,_decode,_goToSleep,_dummy,_wifi_mac},              // 35 WiFi
-  {1,_wifi_select,_wifi_config,_wifi,0},                // 36 Disp Mac
-  {1,_wifi_mac,_wifi_check,_wifi,0},                    // 37 Config Wifi
-  {1,_wifi_config,_wifi_upload,_wifi,0},                // 38 Check WiFi
-  {1,_wifi_check,_wifi_update,_wifi,0},                 // 39 Upload File
-  {1,_wifi_upload,_wifi_select,_wifi,0},                // 40 Update Firmware
-  {1,_wifi_update,_wifi_mac,_wifi,0},                   // 41 Select network
-  {0,_wifi,_keyer,_dummy,0}                             // 42 goto sleep
+  {0,_echo,_decode,_dummy,_trxLora},                    // 16 transceiver
+  {1,_trxIcw,_trxLora,_trx,0},                          // 17 lora
+  {1,_trxLora,_trxIcw,_trx,0},                          // 18 Icw
+  {0,_decode,_goToSleep,_dummy,0},                      // 19 Decoder
+  {0,_keyer,_dummy,_dummy,0}                            // 20 goto sleep
 };
 
 //boolean quickStart;                                     // should we execute menu item immediately?
@@ -178,7 +131,7 @@ void MorseMenu::menu_() {
                   if (menuNav[newMenuPtr][naviDown] == 0) {
                       MorsePreferences::menuPtr = newMenuPtr;
                       disp = 0;
-                      if (MorsePreferences::menuPtr < _wifi) {                        // remember last executed, unless it is a wifi function or shutdown
+                      if (MorsePreferences::menuPtr < _goToSleep) {                        // remember last executed, unless it is the gotoSleep
                         MorsePreferences::writeLastExecuted(newMenuPtr);
                       }
                       if (MorseMenu::menuExec())
@@ -254,7 +207,6 @@ boolean MorseMenu::menuExec() {                                          // retu
 //  const char* peerHost;
   String s;
 
-  kochActive = false;
   keyerState = IDLE_STATE;
   
   switch (MorsePreferences::menuPtr) {
@@ -289,9 +241,6 @@ boolean MorseMenu::menuExec() {                                          // retu
                 firstTime = true;
                 morseState = morseGenerator;
                 showStartDisplay("Generator     ", "Start/Stop:   ", "Paddle | BLACK", 1250);
-                if (MorsePreferences::loraTrainerMode == 2)
-                  if (!setupWifi())
-                    return false;
                 return true;
                 break;
       case  _echoRand:
@@ -315,98 +264,19 @@ boolean MorseMenu::menuExec() {                                          // retu
                 startFirst = true;
                 morseState = echoTrainer;
                 echoStop = false;
-                showStartDisplay(generatorMode == KOCH_LEARN ? "New Character:" : "Echo Trainer:", "Start:       ", "Press paddle ", 1250);
+                showStartDisplay("Echo Trainer:", "Start:       ", "Press paddle ", 1250);
                 if(MorsePreferences::keyermode == STRAIGHTKEY)
                   keyDecoder.setup();
                 return true;
                 break;
-      case  _kochSel: // Koch Select 
-                MorsePreferences::displayKeyerPreferencesMenu(MorsePreferences::posKochFilter);
-                MorsePreferences::adjustKeyerPreference(MorsePreferences::posKochFilter);
-                MorsePreferences::writePreferences("morserino");
-                return false;
-                break;
-      case  _kochLearn:   // Koch Learn New .  /// just a new generatormode....
-                generatorMode = KOCH_LEARN;
-                MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
-                goto startEcho;
-      case  _kochGenRand: // RANDOMS 
-                generatorMode = RANDOMS;
-                kochActive = true;
-                MorsePreferences::setCurrentOptions(MorsePreferences::kochGenOptions, MorsePreferences::kochGenOptionsSize);
-                goto startGenerator;
-      case  _kochGenAbb: // ABBREVS - 2
-                generatorMode = ABBREVS;
-                kochActive = true;
-                MorsePreferences::setCurrentOptions(MorsePreferences::kochGenOptions, MorsePreferences::kochGenOptionsSize);
-                goto startGenerator;
-      case  _kochGenWords: // WORDS - 3
-                generatorMode = WORDS;
-                kochActive = true;
-                MorsePreferences::setCurrentOptions(MorsePreferences::kochGenOptions, MorsePreferences::kochGenOptionsSize);
-                goto startGenerator;
-      case  _kochGenMixed: // KOCH_MIXED - 5
-                generatorMode = KOCH_MIXED;
-                kochActive = true;
-                MorsePreferences::setCurrentOptions(MorsePreferences::kochGenOptions, MorsePreferences::kochGenOptionsSize);
-                goto startGenerator;
-      case  _kochEchoRand: // Koch Echo Random
-                generatorMode = RANDOMS;
-                kochActive = true;
-                MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
-                goto startEcho;
-      case  _kochEchoAbb: // ABBREVS - 2
-                generatorMode = ABBREVS;
-                kochActive = true;
-                MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
-                goto startEcho;
-      case  _kochEchoWords: // WORDS - 3
-                generatorMode = WORDS;
-                kochActive = true;
-                MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
-                goto startEcho;
-      case  _kochEchoMixed: // KOCH_MIXED - 5
-                generatorMode = KOCH_MIXED;
-                kochActive = true;
-                MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
-                goto startEcho;
-      case  _kochEchoAdaptive: // Koch Echo Adaptive - 6
-                generatorMode = KOCH_ADAPTIVE;
-                kochActive = true;
-                MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
-
-                // re-run the setup, this will reset the character probabilities
-                koch.setup();
-                
-                goto startEcho;
       case  _trxLora: // LoRa Transceiver
-                generatorMode = RANDOMS;  // to reset potential KOCH_LEARN
+                generatorMode = RANDOMS;
                 MorsePreferences::setCurrentOptions(MorsePreferences::loraTrxOptions, MorsePreferences::loraTrxOptionsSize);
                 morseState = loraTrx;
                 showStartDisplay("", "Start LoRa Trx", "", 500);
                 clearPaddleLatches();
                 clearText = "";
                 LoRa.receive();
-                return true;
-                break;
-      case  _trxWifi: // Wifi Transceiver
-                generatorMode = RANDOMS;  // to reset potential KOCH_LEARN
-                MorsePreferences::setCurrentOptions(MorsePreferences::wifiTrxOptions, MorsePreferences::wifiTrxOptionsSize);
-                morseState = wifiTrx;
-                MorseOutput::clearDisplay();
-                MorseOutput::printOnScroll(0, REGULAR, 0, "Connecting...");
-
-                if (!setupWifi())
-                  return false;
-                //DEBUG("Peer IP: " + peerIP.toString());
-                s = peerIP.toString();
-                showStartDisplay("", "Start Wifi Trx", s  == "255.255.255.255" ?"IP Broadcast" : s, 1500);
-
-                MorseWiFi::audp.listen(MORSERINOPORT); // listen on port 7373
-                MorseWiFi::audp.onPacket(onWifiReceive);
-                clearPaddleLatches();
-                //keyTx = false;
-                clearText = "";
                 return true;
                 break;
       case  _trxIcw: /// icw/ext TRX
@@ -436,48 +306,12 @@ boolean MorseMenu::menuExec() {                                          // retu
                 audioDecoder.setup();
                 return true;
                 break;
-      case  _wifi_mac:
-      case  _wifi_config:
-      case _wifi_check:
-      case _wifi_upload:
-      case _wifi_update:
-                  MorseWiFi::menuExec((uint8_t) MorsePreferences::menuPtr);
-                  break;
-      case _wifi_select:
-                  MorseWiFi::menuNetSelect();
-                  break;
       case  _goToSleep: /// deep sleep
                 checkShutDown(true);
       default:  break;
   }
   return false;
 }   /// end menuExec()
-
-boolean MorseMenu::setupWifi() {
-  String peer;
-  const char* peerHost;
-
-//// if not true WiFi has not been configured or is not available, hence return false!
-  if (! MorseWiFi::wifiConnect()) {
-    delay(1000);    // wait a bit
-    return(false);
-  }
-
-  if (MorsePreferences::wlanTRXPeer.length() == 0) 
-      peer = "255.255.255.255";     // send to local broadcast IP if not set
-  else
-      peer = MorsePreferences::wlanTRXPeer;
-  peerHost = peer.c_str();
-  if (!peerIP.fromString(peerHost)) {    // try to interpret the peer as an ip address...
-    //DEBUG("hostname: " + String(peerHost));
-      int err = WiFi.hostByName(peerHost, peerIP); // ...and resolve peer into ip address if that fails
-    //DEBUG("errcode: " + String(err));
-      if (err != 1)                       // if that fails too, use broadcast
-        peerIP.fromString("255.255.255.255");
-  }
-  return true;
-}
-
 
 void MorseMenu::cleanupScreen() {
     MorseOutput::clearDisplay();

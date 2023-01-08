@@ -4,12 +4,10 @@
 #include <Arduino.h>
 #include "morsedefs.h"
 #include "MorsePreferences.h"
-#include "MorseWiFi.h"
 #include "MorseDecoder.h"
 
 
 extern boolean active, echoStop, firstTime, startFirst;
-extern boolean kochActive;
 extern boolean filteredState, filteredStateBefore, speedChanged;
 extern boolean quickStart;
 extern unsigned long ditAvg, dahAvg;
@@ -39,7 +37,6 @@ namespace MorseMenu
 {
 void menu_();
 boolean menuExec();
-boolean setupWifi();
 void menuDisplay(uint8_t ptr);
 void cleanupScreen();
 void showStartDisplay(String, String, String, int);

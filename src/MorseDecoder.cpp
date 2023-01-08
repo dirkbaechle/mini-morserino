@@ -111,7 +111,7 @@ void Decoder::decode() {
                                   lastWasKey = fromKey;
                                   speedChanged = true;
                                 }
-                                if (morseState == loraTrx || morseState == wifiTrx)
+                                if (morseState == loraTrx)
                                       cwForTx(0);
                                 decoderState = INTERCHAR_;
                               }
@@ -132,12 +132,9 @@ void Decoder::decode() {
                                    if (morseState == echoTrainer && echoTrainerState == COMPLETE_ANSWER)   {       // change the state of the trainer at end of word in case of echo trainer
                                        echoTrainerState = EVAL_ANSWER;
                                    }
-                                   if (morseState == loraTrx || morseState == wifiTrx)    {                    // when in Trx mode
+                                   if (morseState == loraTrx)    {                    // when in Trx mode
                                        cwForTx(3);
-                                       if (morseState == loraTrx)
-                                            sendWithLora();                        // finalise the string and send it to LoRA
-                                       else
-                                            sendWithWifi();
+                                       sendWithLora();                        // finalise the string and send it to LoRA
                                    }
                               }
                           }
@@ -170,7 +167,7 @@ void Decoder::ON_() {                         /// what we do when we just detect
   startTimeHigh = timeNow;                          // prime the timer for the high state
   
   unsigned int pitch = MorseOutput::notes[MorsePreferences::sidetoneFreq];
-        if ((morseState == echoTrainer || morseState == loraTrx || morseState == wifiTrx) && MorsePreferences::echoToneShift != 0) {
+        if ((morseState == echoTrainer || morseState == loraTrx) && MorsePreferences::echoToneShift != 0) {
            pitch = (MorsePreferences::echoToneShift == 1 ? pitch * 18 / 17 : pitch * 17 / 18);        /// one half tone higher or lower, as set in parameters in echo trainer mode
         }
   keyOut(true, fromKey, pitch, MorsePreferences::sidetoneVolume);   
@@ -192,14 +189,14 @@ void Decoder::OFF_() {                                 /// what we do when we ju
             myTable.recordDit();
             //treeptr = CWtree[treeptr].dit;
             recalculateDit(highDuration);
-            if (morseState == loraTrx || morseState == wifiTrx)
+            if (morseState == loraTrx)
                 cwForTx(1);
       }
       else  {        /// we got a dah
             myTable.recordDah();
             //treeptr = CWtree[treeptr].dah;   
             recalculateDah(highDuration);
-            if (morseState == loraTrx || morseState == wifiTrx)
+            if (morseState == loraTrx)
                 cwForTx(2);                 
       }
   }

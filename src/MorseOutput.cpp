@@ -201,7 +201,7 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, String text, boolean
     //DEBUG("relPos: " + String(relPos));
     MorseOutput::printOnScroll(2, style, screenPos, text);               // these characters are 9 pixels wide,
   }
-  Heltec.display -> setFont(DialogInput_plain_15);;
+  Heltec.display -> setFont(DialogInput_plain_12);;
   screenPos += (Heltec.display -> getStringWidth(text) / C_WIDTH);
   if (linebreak) {
     MorseOutput::newLine(scroll);
@@ -287,9 +287,9 @@ uint8_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, 
     Heltec.display -> setColor(BLACK);
 
   if (how & BOLD)
-    Heltec.display -> setFont(DialogInput_bold_15);
+    Heltec.display -> setFont(DialogInput_bold_12);
   else
-    Heltec.display -> setFont(DialogInput_plain_15);
+    Heltec.display -> setFont(DialogInput_plain_12);
 
   Heltec.display -> setTextAlignment(TEXT_ALIGN_LEFT);
 
