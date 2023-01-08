@@ -16,9 +16,6 @@
 #define MORSEDEFS_H
 
 #include "Arduino.h"
-#define ESP32
-#define WIFI_LoRa_32
-#include "heltec.h"
 #include "ClickButton.h"   // button control library
 #include "WiFi.h"
 #include <WiFiUdp.h>       // UDP lib for WiFi TRX
@@ -95,6 +92,11 @@ namespace Buttons
 //// batteryPin 13 in 3, 37 in 4
 //// these are NOT compile options in this version but will be determined at startup (in setup()), to achieve backwards compatibility
 
+
+// TODO Fix pin numbers
+
+const int PinSDA=4;
+const int PinSCL=5;
 
 /// where is the encoder?
 const int PinCLK=38;                   // Used for generating interrupts using CLK signal - needs external pullup resisitor! 

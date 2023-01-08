@@ -1,7 +1,10 @@
-
-
 #ifndef _HELTEC_H_
 #define _HELTEC_H_
+
+#include "morsedefs.h"
+
+#define ESP32
+#define WIFI_LoRa_32
 
 #if defined(ESP32)
 
