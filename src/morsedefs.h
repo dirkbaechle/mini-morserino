@@ -16,6 +16,8 @@
 #define MORSEDEFS_H
 
 #include "Arduino.h"
+#define ESP32
+#define WIFI_LoRa_32
 #include "heltec.h"
 #include "ClickButton.h"   // button control library
 #include "WiFi.h"

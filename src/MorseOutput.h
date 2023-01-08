@@ -2,6 +2,8 @@
 #define MORSEDISPLAY_H_
 
 #include "Arduino.h"
+#define ESP32
+#define WIFI_LoRa_32
 #include "heltec.h"
 
 #define NoOfLines 15

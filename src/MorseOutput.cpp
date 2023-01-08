@@ -25,6 +25,8 @@
 #define C_WIDTH 9
 
 #include <Arduino.h>
+#define ESP32
+#define WIFI_LoRa_32
 #include "heltec.h"
 #include "MorseOutput.h"
 #include "morsedefs.h"

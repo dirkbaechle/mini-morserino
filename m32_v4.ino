@@ -26,17 +26,17 @@
  ****************************************************************************************************************************/
 
 
-#include "morsedefs.h"
-#include "wklfonts.h"         // monospaced fonts in size 12 (regular and bold) for smaller text , called :
-                              // DialogInput_plain_12, DialogInput_bold_12
-                              // these fonts were created with this tool: http://oledHeltec.display -> squix.ch/#/home
-#include "abbrev.h"           // common CW abbreviations
-#include "english_words.h"    // common English words
-#include "MorseOutput.h"      // display and sound functions
-#include "MorsePreferences.h" // preferences and persistent storage, snapshots
-#include "MorseMenu.h"        // main menu
-#include "goertzel.h"         // Goertzel filter
-#include "MorseDecoder.h"     // Decoder Engine
+#include "src/morsedefs.h"
+#include "src/wklfonts.h"         // monospaced fonts in size 12 (regular and bold) for smaller text , called :
+                                  // DialogInput_plain_12, DialogInput_bold_12
+                                  // these fonts were created with this tool: http://oledHeltec.display -> squix.ch/#/home
+#include "src/abbrev.h"           // common CW abbreviations
+#include "src/english_words.h"    // common English words
+#include "src/MorseOutput.h"      // display and sound functions
+#include "src/MorsePreferences.h" // preferences and persistent storage, snapshots
+#include "src/MorseMenu.h"        // main menu
+#include "src/goertzel.h"         // Goertzel filter
+#include "src/MorseDecoder.h"     // Decoder Engine
 
 
 // define the buttons for the clickbutton library, & other classes that we need
