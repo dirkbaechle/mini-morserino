@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 #include "morsedefs.h"
-#include "goertzel.h"
 
 #define USE_KEY true
 #define USE_AUDIO false
@@ -108,7 +107,7 @@ const struct linklist CWtree[67]  = {
 };
 
 //// we define two classes: MorseTable (a pointer to the linked list defined above, and mthods to manipulate the pointer)
-////                   and  Decoder (which decodes signals from a key or from audio - derived from a Goertzel filter) 
+////                   and  Decoder (which decodes signals from a key) 
 
 class MorseTable {
 
@@ -127,7 +126,7 @@ public:
 class Decoder {
 
 private:
-  boolean fromKey;                        /// if true, decode  from straight key, if false, from audio through Goertzel
+  boolean fromKey;                        /// if true, decode  from straight key
   boolean filteredState;
   boolean filteredStateBefore;
   DECODER_STATES decoderState;

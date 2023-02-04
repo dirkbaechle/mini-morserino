@@ -115,10 +115,6 @@ const int LEFT = T2;        // = Pin 2
 const int RIGHT = T5;       // = Pin 12
 
 
-// audio in
-const int audioInPin = 36;      // audio in for Morse decoder // 
-
-
 // NF Line-out (for iCW etc.)
 const int lineOutPin = 17; // for NF line out
 

@@ -20,7 +20,6 @@ extern DECODER_STATES decoderState;
 extern GEN_TYPE generatorMode;
 extern KEYERSTATES keyerState;
 extern Decoder keyDecoder;
-extern Decoder audioDecoder;
 
 
 extern void keyOut(boolean,  boolean, int, int);

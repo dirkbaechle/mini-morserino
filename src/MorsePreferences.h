@@ -9,14 +9,12 @@
 #include "morsedefs.h"
 #include "abbrev.h"
 #include "english_words.h"
-#include "goertzel.h"
 
 extern int8_t hwConf;
 
 extern String cleanUpProSigns( String &input );
 extern void updateTimings();
 extern String cleanUpProSigns( String &input );
-//extern void setupGoertzel();
 extern int IRAM_ATTR checkEncoder();
 
 extern void keyOut(boolean,  boolean, int, int);
@@ -57,7 +55,6 @@ namespace MorsePreferences
   extern boolean echoConf;
   extern uint8_t keyTrainerMode;
   extern uint8_t loraTrainerMode;
-  extern uint8_t goertzelBandwidth;
   extern boolean speedAdapt;
   extern uint8_t latency;
   extern uint8_t randomFile;
@@ -114,7 +111,7 @@ namespace MorsePreferences
                   posEchoToneShift, posInterWordSpace, posInterCharSpace, posRandomOption,
                   posRandomLength, posCallLength, posAbbrevLength, posWordLength,
                   posTrainerDisplay, posWordDoubler, posEchoDisplay, posEchoRepeats,  posEchoConf,
-                  posKeyTrainerMode, posLoraTrainerMode, posGoertzelBandwidth, posSpeedAdapt,
+                  posKeyTrainerMode, posLoraTrainerMode, posSpeedAdapt,
                   posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut, 
                   posQuickStart, posAutoStop,posMaxSequence, posLoraSyncW,   posSerialOut,
                   posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posHwConf
@@ -196,7 +193,6 @@ namespace internal {
   void displayEchoConf();
   void displayWordDoubler();
   void displayRandomFile();
-  void displayGoertzelBandwidth();
   void displaySpeedAdapt();
   void displayExtAudioOnDecode();
   void displayTimeOut();

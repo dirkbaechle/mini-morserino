@@ -35,7 +35,6 @@
 #include "src/MorseOutput.h"      // display and sound functions
 #include "src/MorsePreferences.h" // preferences and persistent storage, snapshots
 #include "src/MorseMenu.h"        // main menu
-#include "src/goertzel.h"         // Goertzel filter
 #include "src/MorseDecoder.h"     // Decoder Engine
 
 
@@ -51,7 +50,6 @@ ClickButton Buttons::modeButton(modeButtonPin);              // activeHigh must 
 ClickButton Buttons::volButton(volButtonPin);               // external pullup for this one
 
 Decoder keyDecoder(USE_KEY);
-Decoder audioDecoder(USE_AUDIO);
 MorseTable keyerTable;
 
 // things for reading the encoder
@@ -426,8 +424,7 @@ void setup()
       }
   }
   analogSetAttenuation(ADC_0db);
-  adcAttachPin(audioInPin);
-
+  
   // to calibrate sensors, we record the values in untouched state; need to do this after checking for system config
   initSensors();
 
@@ -554,7 +551,6 @@ void loop() {
       case morseTrx:      if (doPaddleIambic(leftKey, rightKey)) {
                               return;                                                        // we are busy keying and so need a very tight loop !
                           }  
-                          audioDecoder.decode();
                           if (speedChanged) {
                             speedChanged = false;
                             displayCWspeed();
@@ -624,7 +620,6 @@ void loop() {
                             break;
       case morseDecoder: //DEBUG("case morseDecoder");
                          keyDecoder.decode();
-                         audioDecoder.decode();
                          if (speedChanged) {
                             speedChanged = false;
                             displayCWspeed();
@@ -1622,13 +1617,11 @@ void displayCWspeed() {
   char numBuf[16];                // for number to string conversion with sprintf()
   uint8_t wpm;
   
-  wpm = lastWasKey ? keyDecoder.getWpm() : audioDecoder.getWpm();
+  wpm = lastWasKey ? keyDecoder.getWpm() : 0;
   if ((morseState ==  echoTrainer && MorsePreferences::keyermode == STRAIGHTKEY))
     sprintf(numBuf, "(%2i)", wpm);
   else if (( morseState == morseGenerator || morseState ==  echoTrainer ))
     sprintf(numBuf, "(%2i)", effWpm);
-  else if (morseState == morseTrx )
-    sprintf(numBuf, "r%2is", audioDecoder.getWpm());
   else sprintf(numBuf, "    ");
 
   MorseOutput::printOnStatusLine(false, 3,  numBuf);                                         // effective wpm or rxwpm
@@ -2099,33 +2092,14 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
 ///////////////// a test function for adjusting audio levels
 
 void audioLevelAdjust() {
-    uint16_t i, maxi, mini;
-    uint16_t dataSize = 1216;
-    uint16_t testData[dataSize];
-
     MorseOutput::clearDisplay();
     MorseOutput::printOnScroll(0, BOLD, 0, "Audio Adjust");
     MorseOutput::printOnScroll(1, REGULAR, 0, "End with RED");
-    //keyTx = true;
-    keyOut(true,  true, 698, 0);                                  /// we generate a side tone, f=698 Hz, also on line-out, but with vol down on speaker
     while (true) {                                                       // we also key the transmitter (can be used for tuning the Tx...)
         Buttons::volButton.Update();
         if (Buttons::volButton.clicks)
             break;                                                /// pressing the red button gets you out of this mode!
-        for (i = 0; i < dataSize ; ++i)
-            testData[i] = analogRead(audioInPin);                 /// read analog input
-        maxi = mini = testData[0];
-        for (i = 1; i< dataSize ; ++i) {
-            if (testData[i] < mini)
-              mini = testData[i];
-            if (testData[i] > maxi)
-              maxi = testData[i];
-        }
-        //DEBUG("From " + String(mini) + " to " + String(maxi));
-        MorseOutput::showVolumeScope(mini, maxi);
     } // end while
-    keyOut(false,  true, 698, 0);                                  /// stop keying
-    //keyTx = true;
 }
 
 

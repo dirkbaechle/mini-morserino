@@ -303,7 +303,6 @@ boolean MorseMenu::menuExec() {                                          // retu
                 displayCWspeed();
                 MorseOutput::displayVolume(encoderState == speedSettingMode, MorsePreferences::sidetoneVolume);                                     // sidetone volume
                 keyDecoder.setup();
-                audioDecoder.setup();
                 return true;
                 break;
       case  _goToSleep: /// deep sleep

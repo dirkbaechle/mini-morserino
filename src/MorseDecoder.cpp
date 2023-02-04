@@ -12,7 +12,6 @@
  *  If not, see <https://www.gnu.org/licenses/>.
  *****************************************************************************************************************************/
 #include "morsedefs.h"
-#include "goertzel.h"
 #include "MorseDecoder.h"
 #include "MorseOutput.h"
 
@@ -30,8 +29,6 @@ Decoder::Decoder(boolean key) {
 
 void Decoder::setup() {
   /// set up variables for  Morse Decoder
-  if (!fromKey)
-      Goertzel::setup();
   filteredState = filteredStateBefore = realstate = realstatebefore = false;
   lastStartTime = 0;
   decoderState = LOW_;
@@ -58,8 +55,6 @@ if (fromKey) {
 //    else
         realstate =  ((!digitalRead(straightPin)) || leftKey || rightKey) ; // we also check the paddles (also the capacitive ones)
 }
-else 
-    realstate = Goertzel::checkInput();
 
 
   //////////////////////////////////////////////////////////////////

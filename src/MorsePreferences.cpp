@@ -18,7 +18,6 @@
 #include "abbrev.h"
 #include "english_words.h"
 #include "ClickButton.h"   // button control library
-#include "goertzel.h"
 
 using namespace MorsePreferences;
 
@@ -56,7 +55,6 @@ Preferences pref;               // use the Preferences library for storing and r
                                               //  0: "Never";  1: "CW Keyer only";  2: "Keyer&Generator"; 3: Keyer, generator and LoRa / Internet RX
   uint8_t MorsePreferences::loraTrainerMode = 0;              // transmit via LoRa or WiFi in generator and player mode?
                                               //  0: "No";  1: "LoRa" 2: "WiFi"
-  uint8_t MorsePreferences::goertzelBandwidth = 0;            //  0: "Wide" 1: "Narrow" 
   boolean MorsePreferences::speedAdapt = false;               //  true: in echo modes, increase speed when OK, reduce when not ok     
   uint8_t MorsePreferences::latency = 5;                      //  time span after currently sent element during which paddles are not checked; in 1/8th of dit length; stored as 1 -  8  
   uint8_t MorsePreferences::randomFile = 0;                   // if 0, play file word by word; if 255, skip random number of words (0 - 255) between reads   
@@ -147,15 +145,15 @@ const String MorsePreferences::prefOption[] = { "Encoder Click", "Tone Pitch Hz"
  prefPos MorsePreferences::loraTrxOptions[] =    {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
                                     posEchoToneShift, posTrainerDisplay, posKeyTrainerMode, posExtAudioOnDecode, posTimeOut, posQuickStart, posLoraSyncW, posSerialOut };
  prefPos MorsePreferences::extTrxOptions[] =     {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
-                                    posEchoToneShift, posGoertzelBandwidth, posExtAudioOnDecode, posTimeOut, posQuickStart, posSerialOut };
- prefPos MorsePreferences::decoderOptions[] =    {posClicks, posPitch, posCurtisMode, posGoertzelBandwidth, posExtAudioOnDecode, posTimeOut, posQuickStart, posSerialOut };
+                                    posEchoToneShift, posExtAudioOnDecode, posTimeOut, posQuickStart, posSerialOut };
+ prefPos MorsePreferences::decoderOptions[] =    {posClicks, posPitch, posCurtisMode, posExtAudioOnDecode, posTimeOut, posQuickStart, posSerialOut };
 
  prefPos MorsePreferences::allOptions[] =        { posClicks, posPitch, posExtPaddles, posPolarity, posLatency,
                                     posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, 
                                     posEchoToneShift, posInterWordSpace, posInterCharSpace, posRandomOption, 
                                     posRandomLength, posCallLength, posAbbrevLength, posWordLength, posMaxSequence, posAutoStop, 
                                     posTrainerDisplay, posRandomFile, posWordDoubler, posEchoRepeats, posEchoDisplay, posEchoConf, 
-                                    posKeyTrainerMode, posLoraTrainerMode, posLoraSyncW, posGoertzelBandwidth, posSpeedAdapt, 
+                                    posKeyTrainerMode, posLoraTrainerMode, posLoraSyncW, posSpeedAdapt, 
                                     posExtAudioOnDecode, posTimeOut, posQuickStart, posSerialOut};
 
 prefPos *MorsePreferences::currentOptions = MorsePreferences::allOptions;
@@ -322,8 +320,6 @@ void MorsePreferences::displayKeyerPreferencesMenu(int pos) {
     case posLoraTrainerMode:  internal::displayLoraTrainerMode();
                           break;
     case posLoraSyncW:    internal::displayLoraSyncW();
-                          break;
-    case posGoertzelBandwidth: internal::displayGoertzelBandwidth();
                           break;
     case posSpeedAdapt:   internal::displaySpeedAdapt();
                           break;
@@ -599,17 +595,6 @@ void internal::displayWordDoubler() {
 void internal::displayRandomFile() {
     MorseOutput::printOnScroll(2, REGULAR, 1,  MorsePreferences::randomFile ? "On  " :
                                                 "Off " ); 
-}
-
-void internal::displayGoertzelBandwidth()  {
-    String option;
-  switch(MorsePreferences::goertzelBandwidth) {
-    case 0: option = "Wide         ";
-            break;
-    case 1: option = "Narrow       ";
-            break;
-  }
-  MorseOutput::printOnScroll(2, REGULAR, 1, option);
 }
 
 void internal::displaySpeedAdapt() {
@@ -920,10 +905,6 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                 case posLoraSyncW: MorsePreferences::loraSyncW = (MorsePreferences::loraSyncW == 0x27 ? 0x66 : 0x27);
                                 internal::displayLoraSyncW();
                                 break;
-                case  posGoertzelBandwidth: MorsePreferences::goertzelBandwidth += (t+2);                   // transmit lora in generator and player mode; can be 0 (no) or 1 (yes)
-                                MorsePreferences::goertzelBandwidth = (MorsePreferences::goertzelBandwidth % 2);
-                                internal::displayGoertzelBandwidth();
-                                break; 
                 case  posSpeedAdapt: MorsePreferences::speedAdapt = !MorsePreferences::speedAdapt;
                                 internal::displaySpeedAdapt();
                                 break; 
@@ -1156,11 +1137,6 @@ void MorsePreferences::readPreferences(String repository) {
     else if (morserino)
         pref.putUChar("loraTrainerMode", MorsePreferences::loraTrainerMode);
 
-    if ((temp = pref.getUChar("goertzelBW")))
-        MorsePreferences::goertzelBandwidth = temp;
-    else if (morserino)
-        pref.putUChar("goertzelBW", MorsePreferences::goertzelBandwidth);
-
     if ((temp = pref.getUChar("latency")))
         MorsePreferences::latency = temp;
     else if (morserino)
@@ -1285,11 +1261,6 @@ void MorsePreferences::writePreferences(String repository) {
         pref.putBool("speedAdapt", MorsePreferences::speedAdapt);
     if (MorsePreferences::loraTrainerMode != pref.getUChar("loraTrainerMode"))
         pref.putUChar("loraTrainerMode", MorsePreferences::loraTrainerMode);
-    if (MorsePreferences::goertzelBandwidth != pref.getUChar("goertzelBW")) {
-        pref.putUChar("goertzelBW", MorsePreferences::goertzelBandwidth);
-        if (morserino)
-          Goertzel::setup();
-    }
     if (MorsePreferences::loraSyncW != pref.getUChar("loraSyncW")) {
         pref.putUChar("loraSyncW", MorsePreferences::loraSyncW);
         if (morserino)
