@@ -90,8 +90,6 @@ encoderMode encoderState = speedSettingMode;    // we start with adjusting the s
 
 unsigned int interCharacterSpace, interWordSpace;   // need to be properly initialised!
 unsigned int effWpm;                                // calculated effective speed in WpM
-unsigned int lUntouched = 0;                        // sensor values (in untouched state) will be stored here
-unsigned int rUntouched = 0;
 
 boolean alternatePitch = false;                     // to change pitch in CW generator / file player
 
@@ -127,7 +125,6 @@ unsigned int ditLength ;        // dit length in milliseconds - 100ms = 60bpm = 
 unsigned int dahLength ;        // dahs are 3 dits long
 KEYERSTATES keyerState;
 unsigned long charCounter = 25; // we use this to count characters after changing speed - after n characters we decide to write the config into NVS
-uint8_t sensor;                 // what we read from checking the touch sensors
 boolean leftKey, rightKey;
 
 
@@ -425,10 +422,6 @@ void setup()
   }
   analogSetAttenuation(ADC_0db);
   
-  // to calibrate sensors, we record the values in untouched state; need to do this after checking for system config
-  initSensors();
-
-
 
   /// set up quickstart - this should only be done once at startup - after successful quickstart we disable it to allow normal menu operation
   quickStart = MorsePreferences::quickStart;
@@ -489,12 +482,9 @@ boolean key_was_pressed_at_start() {
 }
 
 boolean checkKey () {
-      uint8_t sensor;
       uint8_t ext;
-      sensor = readSensors(LEFT, RIGHT, true);
       ext = (uint8_t) !(digitalRead(leftPin) && digitalRead(rightPin));
-      //DEBUG("Paddle: " + String(sensor) + " Ext.Key: " + String(ext));
-      if (sensor || ext) 
+      if (ext) 
         return true;
       else
         return false;
@@ -1006,13 +996,10 @@ boolean checkPaddles() {
   */
   left = MorsePreferences::reversePolarity ? rightPin : leftPin;
   right = MorsePreferences::reversePolarity ? leftPin : rightPin;
-  sensor = readSensors(LEFT, RIGHT, false);
-  newL = (sensor >> 1);
-  newR = (sensor & 0x01);
                                                           // read external paddle presses
-  newL = newL | (!digitalRead(left)) ;                    // tip (=left) always, to be able to use straight key to initiate echo trainer etc
+  newL = (!digitalRead(left)) ;                    // tip (=left) always, to be able to use straight key to initiate echo trainer etc
   if (MorsePreferences::keyermode != STRAIGHTKEY) {               
-      newR = newR | (!digitalRead(right)) ;               // ring (=right) only when in straight key mode, to prevent continuous activation 
+      newR = (!digitalRead(right)) ;               // ring (=right) only when in straight key mode, to prevent continuous activation 
   }                                                       // when used with a 2-pole jack on the straight key
   
   if ((MorsePreferences::keyermode == NONSQUEEZE) && newL && newR) 
@@ -1075,57 +1062,6 @@ void togglePolarity () {
      //displayPolarity();
 }
   
-
-/// function to read sensors:
-/// read both left and right twice, repeat reading if it returns 0
-/// return a binary value, depending on a (adaptable?) threshold:
-/// 0 = nothing touched,  1= right touched, 2 = left touched, 3 = both touched
-/// binary:   00          01                10                11
-
-uint8_t readSensors(int left, int right, boolean init) {
-  //long int timer = micros();
-  //static boolean first = true;
-  uint8_t v, lValue, rValue;
-  
-  while ( !(v=touchRead(left)) )
-    ;                                       // ignore readings with value 0
-  lValue = v;
-   while ( !(v=touchRead(right)) )
-    ;                                       // ignore readings with value 0
-  rValue = v;
-
-  if (init == false) {
-    if (lValue < (MorsePreferences::tLeft+10))     {           //adaptive calibration
-        MorsePreferences::tLeft = ( 7*MorsePreferences::tLeft +  ((lValue+lUntouched) / SENS_FACTOR) ) / 8;
-    }
-    if (rValue < (MorsePreferences::tRight+10))     {           //adaptive calibration
-        MorsePreferences::tRight = ( 7*MorsePreferences::tRight +  ((rValue+rUntouched) / SENS_FACTOR) ) / 8;
-    }
-  } else {
-    lValue -=20; rValue -=20;
-  }
-  return ( lValue < MorsePreferences::tLeft ? 2 : 0 ) + (rValue < MorsePreferences::tRight ? 1 : 0 );
-}
-
-
-void initSensors() {
-  int v;
-  lUntouched = rUntouched = 60;       /// new: we seek minimum
-  for (int i=0; i<8; ++i) {
-      while ( !(v=touchRead(LEFT)) )
-        ;                                       // ignore readings with value 0
-        lUntouched += v;
-        //lUntouched = _min(lUntouched, v);
-       while ( !(v=touchRead(RIGHT)) )
-        ;                                       // ignore readings with value 0
-        rUntouched += v;
-        //rUntouched = _min(rUntouched, v);
-  }
-  lUntouched /= 8;
-  rUntouched /= 8;
-  MorsePreferences::tLeft = lUntouched - 9;
-  MorsePreferences::tRight = rUntouched - 9;
-}
 
 
 String getRandomWord( int maxLength) {        //// give me a random English word, max maxLength chars long (1-5) - 0 returns any length

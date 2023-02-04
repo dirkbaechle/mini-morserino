@@ -110,11 +110,6 @@ const int LF_Pin = 23;    // for the lower (= NF) frequency generation
 const int HF_Pin = 22;    // for the HF PWM generation
 
 
-/// where are the touch paddles?
-const int LEFT = T2;        // = Pin 2
-const int RIGHT = T5;       // = Pin 12
-
-
 // NF Line-out (for iCW etc.)
 const int lineOutPin = 17; // for NF line out
 
