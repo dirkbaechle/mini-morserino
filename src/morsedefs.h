@@ -110,10 +110,6 @@ const int LF_Pin = 23;    // for the lower (= NF) frequency generation
 const int HF_Pin = 22;    // for the HF PWM generation
 
 
-// NF Line-out (for iCW etc.)
-const int lineOutPin = 17; // for NF line out
-
-
 // SENS_FACTOR is used for auto-calibrating sensitivity of touch paddles (somewhere between 2.0 and 2.5)
 #define SENS_FACTOR 2.22
 

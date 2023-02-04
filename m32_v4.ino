@@ -2002,19 +2002,19 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
       if (fromHere) {
         intPitch = f;
         intTone = true;
-        MorseOutput::pwmTone(intPitch, volume, true);
+        MorseOutput::pwmTone(intPitch, volume);
       } else {                    // not from here
         extTone = true;
         extPitch = f;
         if (!intTone) 
-          MorseOutput::pwmTone(extPitch, volume, MorsePreferences::extAudioOnDecode);      // set to true if you want external audio out!
+          MorseOutput::pwmTone(extPitch, volume);      // set to true if you want external audio out!
         }
 
   } else {                      // key off
         if (fromHere) {
           intTone = false;
           if (extTone)
-            MorseOutput::pwmTone(extPitch, volume, MorsePreferences::extAudioOnDecode);
+            MorseOutput::pwmTone(extPitch, volume);
           else
             MorseOutput::pwmNoTone();
         } else {                 // not from here

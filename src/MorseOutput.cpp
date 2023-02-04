@@ -61,7 +61,6 @@ FONT_ATTRIB printToScroll_lastStyle = REGULAR;
 /////////////////////// parameters for LF tone generation and  HF (= vol ctrl) PWM
 int toneFreq = 500 ;
 int toneChannel = 2;      // this PWM channel is used for LF generation, duty cycle is 0 (silent) or 50% (tone)
-int lineOutChannel = 3;   // this PWM channel is used for line-out LF generation, duty cycle is 0 (silent) or 50% (tone)
 int volChannel = 8;       // this PWM channel is used for HF generation, duty cycle between 1% (almost silent) and 100% (loud)
 int pwmResolution = 10;
 unsigned int volFreq = 32000; // this is the HF frequency we are using
@@ -483,27 +482,19 @@ void MorseOutput::soundSetup()
     ledcSetup(toneChannel, toneFreq, pwmResolution);
     ledcAttachPin(LF_Pin, toneChannel);
 
-    ledcSetup(lineOutChannel, toneFreq, pwmResolution);
-    ledcAttachPin(lineOutPin, lineOutChannel);                                    ////// change this for real version - no line out currntly
-
     ledcSetup(volChannel, volFreq, pwmResolution);
     ledcAttachPin(HF_Pin, volChannel);
 
     ledcWrite(toneChannel, 0);
-    ledcWrite(lineOutChannel, 0);
 }
 
 
-void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean lineOut) { // frequency in Hertz, volume in range 0 - 19; we use 10 bit resolution
+void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume) { // frequency in Hertz, volume in range 0 - 19; we use 10 bit resolution
   //const uint16_t vol[] = {0,  1, 2, 3, 4, 6, 9, 14, 21, 31, 45, 70, 100, 145, 220, 320, 470, 720, 1023}; // 19 values
   const uint16_t vol[] =   {0,  1, 2, 4, 6, 9, 14, 21, 31, 45, 70, 100, 140, 200, 280, 390, 512, 680, 840, 1023}; // 20 values
   int i = constrain(volume, 0, 19);
   //DEBUG(String(vol[i]));
   //DEBUG(String(frequency));
-  if (lineOut) {
-      ledcWriteTone(lineOutChannel, (double) frequency);
-      ledcWrite(lineOutChannel, dutyCycleFiftyPercent);
-  }
 
   ledcWrite(volChannel, volFreq);
   ledcWrite(volChannel, vol[i]);
@@ -523,20 +514,18 @@ void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean l
 
 void MorseOutput::pwmNoTone() {      // stop playing a tone by changing duty cycle of the tone to 0
   ledcWrite(toneChannel, dutyCycleTwentyPercent);
-  ledcWrite(lineOutChannel, dutyCycleTwentyPercent);
   delayMicroseconds(125);
   ledcWrite(toneChannel, dutyCycleZero);
-  ledcWrite(lineOutChannel, dutyCycleZero);
 }
 
 
 void MorseOutput::pwmClick(unsigned int volume) {                        /// generate a click on the speaker
     if (!MorsePreferences::encoderClicks)
       return;
-    pwmTone(572,volume > 4 ? volume-4 : volume, false);
+    pwmTone(572,volume > 4 ? volume-4 : volume);
     delay(3);
     //pwmTone(286,volume, false);
-    pwmTone(1144,volume > 3 ? volume-3 : volume, false);
+    pwmTone(1144,volume > 3 ? volume-3 : volume);
 
     delay(6);
     //pwmTone(143,volume-4, false);
@@ -545,17 +534,17 @@ void MorseOutput::pwmClick(unsigned int volume) {                        /// gen
 }
 
 void MorseOutput::soundSignalOK() {
-    pwmTone(440, MorsePreferences::sidetoneVolume, false);
+    pwmTone(440, MorsePreferences::sidetoneVolume);
     delay(97);
     pwmNoTone();
-    pwmTone(587, MorsePreferences::sidetoneVolume, false);
+    pwmTone(587, MorsePreferences::sidetoneVolume);
     delay(193);
     pwmNoTone();
 }
 
 
 void MorseOutput::soundSignalERR() {
-    pwmTone(311, MorsePreferences::sidetoneVolume, false);
+    pwmTone(311, MorsePreferences::sidetoneVolume);
     delay(193);
     pwmNoTone();
 }
