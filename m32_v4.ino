@@ -368,8 +368,7 @@ void setup()
 
   // set up the encoder - we need external pull-ups as the pins used do not have built-in pull-ups!
   pinMode(PinCLK,INPUT_PULLUP);
-  pinMode(PinDT,INPUT_PULLUP);  
-  pinMode(keyerPin, OUTPUT);        // we can use the built-in LED to show when the transmitter is being keyed
+  pinMode(PinDT,INPUT_PULLUP);
   pinMode(leftPin, INPUT);          // external keyer left paddle
   pinMode(rightPin, INPUT);         // external keyer right paddle
 
@@ -1733,12 +1732,6 @@ void changeSpeed( int t) {
 }
 
 
-void keyTransmitter(boolean noTx) {
-  if (noTx )
-      return;
-   digitalWrite(keyerPin, HIGH);           // turn the LED on, key transmitter, or whatever
-}
-
 String cleanUpProSigns( String &input ) {
     /// clean up clearText   -   S <as>,  - A <ka> - N <kn> - K <sk> - H ch etc;
     input.replace("S", "<as>");
@@ -2087,7 +2080,6 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
         if (!intTone) 
           MorseOutput::pwmTone(extPitch, volume, MorsePreferences::extAudioOnDecode);      // set to true if you want external audio out!
         }
-      keyTransmitter(noTx);
 
   } else {                      // key off
         if (fromHere) {
@@ -2101,7 +2093,6 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
           if (!intTone)
             MorseOutput::pwmNoTone();
         }
-        digitalWrite(keyerPin, LOW);      // stop keying Tx
   }   // end key off
 }
 

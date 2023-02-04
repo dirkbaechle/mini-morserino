@@ -87,10 +87,9 @@ namespace Buttons
 //// BOARD 3 & 4 differences
 
 
-// TODO Fix pin numbers
-const int PinResetOled=16; // -1 ?
-const int PinSDA=4;
-const int PinSCL=5;
+const int PinResetOled=-1;
+const int PinSDA=5;
+const int PinSCL=4;
 
 /// where is the encoder?
 const int PinCLK=38;                   // Used for generating interrupts using CLK signal - needs external pullup resisitor! 
@@ -114,9 +113,6 @@ const int HF_Pin = 22;    // for the HF PWM generation
 /// where are the touch paddles?
 const int LEFT = T2;        // = Pin 2
 const int RIGHT = T5;       // = Pin 12
-
-// Tx keyer 
-const int keyerPin = 25;        // this keys the transmitter / through a MOSFET Optocoupler - at the same time lights up the LED
 
 
 // audio in
