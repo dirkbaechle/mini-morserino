@@ -32,8 +32,13 @@
 // On an arduino MEGA 2560: 20(SDA), 21(SCL)
 // On an arduino LEONARDO:   2(SDA),  3(SCL), ...
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-#define SCREEN_ADDRESS 0x3D ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+#define SCREEN_ADDRESS 0x3C
+
+#define I2C_SDA 5
+#define I2C_SCL 4
+TwoWire I2COLED = TwoWire(0);
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &I2COLED, OLED_RESET);
 
 #define NUMFLAKES     10 // Number of snowflakes in the animation example
 
@@ -58,7 +63,9 @@ static const unsigned char PROGMEM logo_bmp[] =
   0b00000000, 0b00110000 };
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
+  Serial.println(F("Starting setup of display"));
+  I2COLED.begin(I2C_SDA, I2C_SCL);
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
@@ -66,11 +73,13 @@ void setup() {
     for(;;); // Don't proceed, loop forever
   }
 
+  Serial.println(F("Showing initial screen...wait 2s"));
   // Show initial display buffer contents on the screen --
   // the library initializes this with an Adafruit splash screen.
   display.display();
   delay(2000); // Pause for 2 seconds
 
+  Serial.println(F("Starting display demo!"));
   // Clear the buffer
   display.clearDisplay();
 
