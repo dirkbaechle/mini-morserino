@@ -40,8 +40,6 @@ namespace MorseOutput
   void flushScroll(boolean scroll);
   void newLine(boolean scroll); 
   void displayScrollBar(boolean visible);
-  void displayBatteryStatus(int v);
-  void displayEmptyBattery(void (*f)());
   void displayVolume(boolean speedsetting, uint8_t volume);
   void updateSMeter(int rssi);
   void drawInputStatus(boolean on);

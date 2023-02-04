@@ -35,9 +35,6 @@ class Heltec_ESP32 {
     SSD1306Wire *display;
 #endif
 
-/*wifi kit 32 and WiFi LoRa 32(V1) do not have vext*/
-    void VextON(void);
-    void VextOFF(void);
 };
 
 extern Heltec_ESP32 Heltec;

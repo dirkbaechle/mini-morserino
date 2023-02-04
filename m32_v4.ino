@@ -42,13 +42,8 @@
 // define the buttons for the clickbutton library, & other classes that we need
 
 /// variables, value defined at setup()
-uint8_t batteryPin;
 int leftPin, rightPin; /// where are the external paddles?
 
-
-/// variables for battery measurement
-uint16_t volt;              // store measure battery voltage here
-double voltage_raw;         // raw measurement
 
 using namespace Buttons;
 
@@ -339,13 +334,12 @@ void setup()
 {
    //// the order of the following steps is important:
    //// 1. determine board version
-   //// 2. configure batteryPin and modeButtonPin (clickbutton), depending on board version
+   //// 2. configure modeButtonPin (clickbutton)
    //// 3. read preferences form NVS
    //// 4. enable Vext (a must for board v3)
-   //// 5. measure battery voltage (cannot do this later...)
-   //// 6. initialoze display, configure interrupts for encoder
-   //// 7. check for press of key/paddle at start, to initiate hw config
-   //// 8. do the remaining initialisations
+   //// 5. initialize display, configure interrupts for encoder
+   //// 6. check for press of key/paddle at start, to initiate hw config
+   //// 7. do the remaining initialisations
 
   Serial.begin(115200);
   delay(10); // give me time to bring up serial monitor
@@ -354,11 +348,9 @@ void setup()
   MorsePreferences::determineBoardVersion();
   // now set pins according to board version
   if (MorsePreferences::boardVersion == 3) {
-    batteryPin = 13;
     leftPin = 33;
     rightPin = 32;
   } else {        // must be board version 4
-    batteryPin = 37;
     Buttons::modeButton.activeHigh = HIGH;      // in contrast to board v.3, in v4. the active state is HIGH not LOW
     leftPin = 32;
     rightPin = 33;
@@ -371,17 +363,8 @@ void setup()
   MorsePreferences::readPreferences("morserino");
 
  
-  pinMode(Vext, OUTPUT);
-
-
-  // measure battery voltage, then set pinMode (important for board 4, as the same pin is used for battery measurement
-  volt = batteryVoltage();
+  // set pinMode (important for board 4, as the same pin is used for battery measurement
   pinMode(modeButtonPin, INPUT);
-
-  //enable Vext
-  digitalWrite(Vext,LOW);
-
- //DEBUG("Volt: " + String(volt));
 
   // set up the encoder - we need external pull-ups as the pins used do not have built-in pull-ups!
   pinMode(PinCLK,INPUT_PULLUP);
@@ -396,7 +379,7 @@ void setup()
 
 
  // init display, LoRa, Serial
-  Heltec.begin(true /*DisplayEnable Enable*/, true /*LoRa Enable*/, true /*Serial Enable*/, true /*LoRa use PABOOST*/, BAND /*LoRa RF working band*/);
+  Heltec.begin(true /*DisplayEnable Enable*/, true /*LoRa Enable*/, true /*Serial Enable*/, true /*LoRa use PABOOST*/, 0x433E6 /*LoRa RF working band*/);
   Heltec.display -> setBrightness(MorsePreferences::oledBrightness);
   MorseOutput::clearDisplay();
   MorseOutput::printOnStatusLine( true, 0, "Init...pse wait...");   /// gives us something to watch while SPIFFS is created at very first start
@@ -495,7 +478,7 @@ void setup()
         }
         file.close();
     }    
-    displayStartUp(volt);
+    displayStartUp();
   MorseMenu::menu_();
 } /////////// END setup()
 
@@ -521,9 +504,9 @@ boolean checkKey () {
         return false;
 }
 
-// display startup screen and check battery status
+// display startup screen
 
-void displayStartUp(uint16_t volt) {
+void displayStartUp() {
 
   String s = PROJECTNAME + String(" ");
   MorseOutput::clearDisplay();
@@ -538,12 +521,6 @@ void displayStartUp(uint16_t volt) {
   MorseOutput::printOnScroll(0, REGULAR, 0, s );
   MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2022");
 
-  // uint16_t volt = batteryVoltage(); // has been measured early in setup()
-  
-  if (volt > 1000 && volt < 2800)
-    MorseOutput::displayEmptyBattery(shutMeDown);
-  else 
-    MorseOutput::displayBatteryStatus(volt);
   delay(2000);
 }
 
@@ -1776,55 +1753,6 @@ String cleanUpProSigns( String &input ) {
     return input;
 }
 
-//// measure battery voltage in mV
-
-int16_t batteryVoltage() {      /// measure battery voltage and return result in milliVolts
-  
-      // board version 3 requires Vext being on for reading the battery voltage
-      if (MorsePreferences::boardVersion == 3)
-         digitalWrite(Vext,LOW);
-      // board version 4 requires Vext being off for reading the battery voltage
-      else if (MorsePreferences::boardVersion == 4)
-         digitalWrite(Vext,HIGH);
-
-      double v= 0; int counts = 4;
-      for (int i=0; i<counts   ; ++i) {
-         v+= ReadVoltage(batteryPin);
-         delay(8);
-         //DEBUG(String(v,4));
-      }
-      v /= counts;
-      if (MorsePreferences::boardVersion == 4)      // adjust measurement for board version 4
-        v *= 1.1;
-      voltage_raw = v;
-      v *= (MorsePreferences::vAdjust * 12.9);      // adjust measurement and convert to millivolts
-      return (int16_t) v;                                                                                       
-}
-
-
-
-
-
-
-
-
-
-
-double ReadVoltage(byte pin){
-  adcAttachPin(batteryPin);
-  analogSetClockDiv(128);           //  this value was found by experimenting - no clue what it really does :-(
-  analogSetPinAttenuation(batteryPin,ADC_11db);
-  double reading = analogRead(pin); // Reference voltage is 3v3 so maximum reading is 3v3 = 4095 in range 0 to 4095
-  analogSetClockDiv(1); // 5ms
-
-  //DEBUG("ReadVoltage:" + String(reading));
-  if(reading < 4 || reading > 4092)     /// invalid measurement
-    return 0;
-  //return -0.000000000009824 * pow(reading,3) + 0.000000016557283 * pow(reading,2) + 0.000854596860691 * reading + 0.065440348345433;
-  return -0.000000000000016 * pow(reading,4) + 0.000000000118171 * pow(reading,3)- 0.000000301211691 * pow(reading,2)+ 0.001109019271794 * reading + 0.034143524634089;
-} // Added an improved polynomial, use either, comment out as required
-
-
 
 void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw even if there was no time-out
   unsigned long timeOut;
@@ -1847,16 +1775,12 @@ void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw
 
 void shutMeDown() {
   MorseOutput::sleep();
-  //Heltec.display -> sleep();                //OLED sleep
   LoRa.sleep();                   //LORA sleep
   //WiFi.mode( WIFI_MODE_NULL );    // switch off WiFi
   WiFi.disconnect(true, false);
   delay(50);
-  digitalWrite(Vext,HIGH);
-  delay(50);
   esp_deep_sleep_start();         // go to deep sleep
 }
-
 
 
 
@@ -1925,7 +1849,7 @@ void sendWithLora() {           // hand this string over as payload to the LoRA 
 
 void onLoraReceive(int packetSize){
   String result;
-  result.reserve(sizeof(cwTxBuffer));   // we should never receive a packet lomnger than the sender is allowed to send!
+  result.reserve(sizeof(cwTxBuffer));   // we should never receive a packet longer than the sender is allowed to send!
   result = "";
   
   // received a packet

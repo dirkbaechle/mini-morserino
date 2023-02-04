@@ -14,8 +14,6 @@
 extern int8_t hwConf;
 
 extern String cleanUpProSigns( String &input );
-//extern int16_t batteryVoltage();
-//extern int16_t volt;
 extern void updateTimings();
 extern String cleanUpProSigns( String &input );
 //extern void setupGoertzel();
@@ -104,7 +102,6 @@ namespace MorsePreferences
  #define QRG920 920.55E6
   extern uint32_t loraQRG;
   extern uint8_t snapShots;
-  extern uint8_t boardVersion;
   extern uint8_t oledBrightness;
   
   ////// end of variables stored in preferences

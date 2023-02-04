@@ -364,38 +364,6 @@ void MorseOutput::displayScrollBar(boolean visible) {          /// display a scr
 }
 
 
-///// display battery status as text and icon, parameter v: Voltage in mV
-void MorseOutput::displayBatteryStatus(int v) {    /// v in millivolts!
-
-  int a, b, c; String s; double d;
-  d = v / 50;
-  c = round(d) * 50;
-  // DEBUG("v: " + String (v) + " c: " + String(c));
-  a = c / 1000;
-  b = (c - 1000 * a) / 100;
-  if (v > 1000)
-    s = "U: " + String(a) + "." + String(b) + " V";
-  else
-    s = "Unknown   ?";
-  printOnScroll(2, REGULAR, 0, s);
-  int w = constrain(v, 3100, 4100);
-  w = map(w, 3100, 4100, 0, 31);
-  Heltec.display -> drawRect(75, SCROLL_TOP + 2 * LINE_HEIGHT + 3, 35, LINE_HEIGHT - 4);
-  Heltec.display -> drawRect(110, SCROLL_TOP + 2 * LINE_HEIGHT + 5, 4, LINE_HEIGHT - 8);
-  if (v > 1000)
-    Heltec.display -> fillRect(77, SCROLL_TOP + 2 * LINE_HEIGHT + 5 , w, LINE_HEIGHT - 8);
-  Heltec.display -> display();
-}
-
-void MorseOutput::displayEmptyBattery(void (*f)()) {                                /// display a warning and go to (return to) deep sleep
-  Heltec.display -> clear();
-  Heltec.display -> drawRect(10, 11, 95, 50);
-  Heltec.display -> drawRect(105, 26, 15, 20);
-  printOnScroll(1, INVERSE_BOLD, 4,  "EMPTY");
-  delay(4000);
-  (*f)();
-}
-
 
 /// display volume as a progress bar: vol = 1-100
 void MorseOutput::displayVolume (boolean speedsetting, uint8_t volume) {

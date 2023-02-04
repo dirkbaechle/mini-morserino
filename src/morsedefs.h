@@ -76,25 +76,19 @@ namespace Buttons
 ///// Warning: Board version 1 not supported anymore!!!! (was an early prototype)
 /////
 ///// the following Pins are dependent on the board version
-///// 21:  V2: an encoder port, using interrupts      V3: Vext - used internally to switch Vext on and off
-///// 39:  V2: ADC input to measure battery voltage   V3: encoder port (interrupt driven) instead of 21
-///// 13:  V2: leftPin (external paddle, ext. pullup) V3: used internally to read battery voltage
+///// 13:  V2: leftPin (external paddle, ext. pullup) V3: ?
 ///// 38:  V2: not in use                             V3: encoder port (interrupt driven) instead of 35
 ///// 32:  V2: used for LoRa internally               V3: leftPin
 ///// 33:  V2: used for LoRa internally               V3: rightPin
-///// 34: rightPin                                    V3: cannot be used any longer, used for LoRa internally
-///// 35: PinDT                                       V3: cannot be used any longer, used for LoRa internally
 
 
 /////// here are the board dependent pins definitions
 
 //// BOARD 3 & 4 differences
-//// batteryPin 13 in 3, 37 in 4
-//// these are NOT compile options in this version but will be determined at startup (in setup()), to achieve backwards compatibility
 
 
 // TODO Fix pin numbers
-
+const int PinResetOled=16; // -1 ?
 const int PinSDA=4;
 const int PinSCL=5;
 
@@ -136,7 +130,7 @@ const int lineOutPin = 17; // for NF line out
 // SENS_FACTOR is used for auto-calibrating sensitivity of touch paddles (somewhere between 2.0 and 2.5)
 #define SENS_FACTOR 2.22
 
-#define BAND    433E6  //you can set band here directly,e.g. 868E6,915E6
+//#define BAND    0x433E6  //you can set band here directly,e.g. 868E6,915E6
 
 
 ///////////////////////////////////////// END OF HARDWARE DEFS ////////////////////////////////////////////////////////////////////

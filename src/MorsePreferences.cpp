@@ -173,9 +173,6 @@ int MorsePreferences::allOptionsSize = SizeOfArray(MorsePreferences::allOptions)
 
 int currentOptionSize;
 
-extern double voltage_raw;
-extern int16_t volt;
-
 ////// setup preferences ///////
 
              

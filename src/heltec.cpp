@@ -7,9 +7,9 @@
 Heltec_ESP32::Heltec_ESP32(){
 
 #if defined( WIFI_Kit_32 ) || defined( WIFI_LoRa_32 ) || defined( WIFI_LoRa_32_V2 )
-      display = new SSD1306Wire(0x3c, PinSDA, PinSCL, RST_OLED, GEOMETRY_128_64);
+      display = new SSD1306Wire(0x3c, PinSDA, PinSCL, PinResetOled, GEOMETRY_128_64);
 #elif defined( Wireless_Stick )
-	  display = new SSD1306Wire(0x3c, PinSDA, PinSCL, RST_OLED, GEOMETRY_64_32);
+	  display = new SSD1306Wire(0x3c, PinSDA, PinSCL, PinResetOled, GEOMETRY_64_32);
 #endif
 }
 
@@ -20,11 +20,6 @@ Heltec_ESP32::~Heltec_ESP32(){
 }
 
 void Heltec_ESP32::begin(bool DisplayEnable, bool LoRaEnable, bool SerialEnable, bool PABOOST, long BAND) {
-
-#if defined( WIFI_LoRa_32_V2 ) || defined( Wireless_Stick ) || defined( Wireless_Stick_Lite ) || defined(WIFI_Kit_32) || defined( Wireless_Bridge )
-
-	VextON();
-#endif
 
 	// UART
 	if (SerialEnable) {
@@ -71,7 +66,7 @@ void Heltec_ESP32::begin(bool DisplayEnable, bool LoRaEnable, bool SerialEnable,
 		//LoRaClass LoRa;
 
 		SPI.begin(SCK,MISO,MOSI,SS);
-		LoRa.setPins(SS,RST_LoRa,DIO0);
+		// TODO Check and fix compile error LoRa.setPins(SS,RST_LoRa,DIO0);
 		if (!LoRa.begin(BAND,PABOOST))
 		{
 			if (SerialEnable){
@@ -101,18 +96,6 @@ void Heltec_ESP32::begin(bool DisplayEnable, bool LoRaEnable, bool SerialEnable,
 
 #endif
 	}
-}
-
-void Heltec_ESP32::VextON(void)
-{
-	pinMode(Vext,OUTPUT);
-	digitalWrite(Vext, LOW);
-}
-
-void Heltec_ESP32::VextOFF(void) //Vext default OFF
-{
-	pinMode(Vext,OUTPUT);
-	digitalWrite(Vext, HIGH);
 }
 
 Heltec_ESP32 Heltec;
