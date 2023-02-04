@@ -38,6 +38,11 @@
 #define I2C_SCL 4
 TwoWire I2COLED = TwoWire(0);
 
+// Uncomment next line if you want to scan for the actual
+// I2C address first...
+//#define SCAN_I2CADDRESS 1
+
+
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &I2COLED, OLED_RESET);
 
 #define NUMFLAKES     10 // Number of snowflakes in the animation example
@@ -66,6 +71,11 @@ void setup() {
   Serial.begin(115200);
   Serial.println(F("Starting setup of display"));
   I2COLED.begin(I2C_SDA, I2C_SCL);
+
+#ifdef SCAN_I2CADDRESS  
+  scanI2C(100000);
+  scanI2C(400000);
+#endif
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
@@ -132,6 +142,55 @@ void setup() {
 
 void loop() {
 }
+
+#ifdef SCAN_I2CADDRESS  
+void scanI2C(long frequency){
+  String normal = "standard mode (100 kHz):";
+  String fast = "fast mode (400 kHz):";
+  String fastPlus = "fast mode plus (1 MHz):";
+  String highSpeed = "high speed mode (3.4 MHz):";
+  String ultraSpeed = "ultra fast mode (5.0 MHz):";
+  String defaultStr = " !!!!! Unknown frequency !!!!!";
+  bool error = true;
+  bool addressFound = false;
+  Serial.print("Scanning in ");
+  switch(frequency){
+    case 100000:
+      Serial.println(normal);
+      break;
+    case 400000:
+      Serial.println(fast);
+      break;
+    case 1000000:
+      Serial.println(fastPlus);
+      break;
+    case 3400000:
+      Serial.println(highSpeed);
+      break;
+    case 5000000:
+      Serial.println(ultraSpeed);
+      break;
+    default:
+      Serial.println(defaultStr);
+      break;
+  }
+  
+  I2COLED.setClock(frequency);
+  for(int i=1; i<128; i++){
+    I2COLED.beginTransmission(i);
+    error = I2COLED.endTransmission();
+    if(error == 0){
+      addressFound = true;
+      Serial.print("0x");
+      Serial.println(i,HEX);
+    }
+  }
+  if(!addressFound){
+    Serial.println("No address found");
+  }
+  Serial.println();
+}
+#endif
 
 void testdrawline() {
   int16_t i;
