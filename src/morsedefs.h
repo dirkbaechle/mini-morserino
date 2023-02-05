@@ -40,8 +40,8 @@ const String PROJECTNAME = "mini-Morserino";
 #define IGNORE_SERIALOUT false
 // if IGNORE_SERIALOUT is true, alle DEBUG messages are on serial out, even when Serial Out is active outputting characters from Keyer, Decoder etc
 
-/////// protocol version for Lora - for the time being this is B01
-/////// the first version of the CW over LoRA protocol; future versions will be B02, B03, B00 (reserved for future use)
+/////// protocol version for Wifi - for the time being this is B01
+/////// the first version of the CW over Wifi protocol; future versions will be B02, B03, B00 (reserved for future use)
 
 #define CW_TRX_PROTO_VERSION B01
 
@@ -145,14 +145,14 @@ enum encoderMode                // define modes for state machine of the various
 
 enum morserinoMode              // the states the morserino can be in - selected intop level menu
   {
-      morseKeyer, loraTrx, wifiTrx, morseTrx, morseGenerator, echoTrainer, morseDecoder, shutDown, measureNF, invalid
+      morseKeyer, wifiTrx, morseTrx, morseGenerator, echoTrainer, morseDecoder, shutDown, measureNF, invalid
   };
 
 enum menuNo 
   {   _dummy, _keyer, _gen, _genRand, _genAbb, _genWords,
       _genCalls, _genMixed, _genPlayer, _echo, _echoRand, 
       _echoAbb, _echoWords, _echoCalls, _echoMixed, _echoPlayer,
-      _trx, _trxLora, _trxWifi, _trxIcw, _decode,
+      _trx, _trxWifi, _trxIcw, _decode,
       _wifi, _wifi_mac, _wifi_config, _wifi_check,
       _wifi_upload, _wifi_update, _wifi_select, _goToSleep 
   };

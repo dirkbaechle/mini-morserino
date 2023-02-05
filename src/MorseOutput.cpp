@@ -42,12 +42,6 @@ uint8_t bottomLine = 0;
 const int8_t MorseOutput::maxPos = NoOfLines - 3;
 int8_t MorseOutput::relPos = MorseOutput::maxPos;
 
-#define lora_width 6        /// a simple logo that shows when we operate with loRa, stored in XBM format
-#define lora_height 11
-static unsigned char lora_bits[] = {
-  0x0f, 0x18, 0x33, 0x24, 0x29, 0x2b, 0x29, 0x24, 0x33, 0x18, 0x0f
-};
-
 #define wifi_width 6        /// a simple logo that shows when we operate with WiFi, stored in XBM format
 #define wifi_height 11
 static unsigned char wifi_bits[] = {
@@ -402,13 +396,6 @@ void MorseOutput::drawInputStatus( boolean on) {
   Heltec.display -> display();
 }
 
-
-void MorseOutput::dispLoraLogo() {                     /// display a small logo in the top right corner to indicate we operate with LoRa
-  Heltec.display -> setColor(BLACK);
-  Heltec.display -> drawXbm(121, 2, lora_width, lora_height, lora_bits);
-  Heltec.display -> setColor(WHITE);
-  Heltec.display -> display();
-}
 
 void MorseOutput::dispWifiLogo() {     // display a small logo in the top right corner to indicate we operate with WiFi
   Heltec.display -> setColor(BLACK);

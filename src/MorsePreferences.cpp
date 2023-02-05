@@ -52,9 +52,9 @@ Preferences pref;               // use the Preferences library for storing and r
   uint8_t MorsePreferences::echoToneShift = 1;                // 0 = no shift, 1 = up, 2 = down (a half tone)                   0 - 2
   boolean MorsePreferences::echoConf = true;                  // true if echo trainer confirms audibly too, not just visually
   uint8_t MorsePreferences::keyTrainerMode = 1;               // key a transmitter in generator and player mode?
-                                              //  0: "Never";  1: "CW Keyer only";  2: "Keyer&Generator"; 3: Keyer, generator and LoRa / Internet RX
-  uint8_t MorsePreferences::loraTrainerMode = 0;              // transmit via LoRa or WiFi in generator and player mode?
-                                              //  0: "No";  1: "LoRa" 2: "WiFi"
+                                              //  0: "Never";  1: "CW Keyer only";  2: "Keyer&Generator"; 3: Keyer, generator and Wifi / Internet RX
+  uint8_t MorsePreferences::wifiTrainerMode = 0;              // transmit via WiFi in generator and player mode?
+                                              //  0: "No";  1: "WiFi"
   boolean MorsePreferences::speedAdapt = false;               //  true: in echo modes, increase speed when OK, reduce when not ok     
   uint8_t MorsePreferences::latency = 5;                      //  time span after currently sent element during which paddles are not checked; in 1/8th of dit length; stored as 1 -  8  
   uint8_t MorsePreferences::randomFile = 0;                   // if 0, play file word by word; if 255, skip random number of words (0 - 255) between reads   
@@ -63,7 +63,6 @@ Preferences pref;               // use the Preferences library for storing and r
   uint8_t MorsePreferences::timeOut = 1;                      // time-out value: 4 = no timeout, 1 = 5 min, 2 = 10 min, 3 = 15 min
   boolean MorsePreferences::quickStart = false;               // should we start the last executed command immediately?
   boolean MorsePreferences::autoStopMode = false;                 // If to stop after each word in generator modes
-  uint8_t MorsePreferences::loraSyncW = 0x27;                 // allows to set different LoRa sync words, and so creating virtual "channels"
   uint8_t MorsePreferences::maxSequence = 0;                  // max # of words generated before the Morserino pauses
 
   uint8_t MorsePreferences::serialOut = 7;                    // shall we output characters on USB serial? 0 = none (but DEBUG/ERR) 1 = keyer, 2 = decoder, 3 = both, 7 = everything
@@ -89,10 +88,6 @@ Preferences pref;               // use the Preferences library for storing and r
   uint8_t MorsePreferences::promptPause = 2;                  // in echoTrainer mode, length of pause before we send next word; multiplied by interWordSpace
   uint8_t MorsePreferences::tLeft = 20;                       // threshold for left paddle
   uint8_t MorsePreferences::tRight = 20;                      // threshold for right paddle
-
-  uint8_t MorsePreferences::loraBand = 0;                     // 0 = 433, 1 = 868, 2 = 920
-
-  uint32_t MorsePreferences::loraQRG = QRG433;                // for 70 cm band
 
   uint8_t MorsePreferences::snapShots = 0;                    // keep track which snapshots are being used ( 0 .. 7, called 1 to 8)
 
@@ -121,16 +116,16 @@ const String MorsePreferences::prefOption[] = { "Encoder Click", "Tone Pitch Hz"
                               "CW Gen Displ ", "Each Word 2x ", "Echo Prompt  ", "Echo Repeats ", "Confrm. Tone ", 
                               "Key ext TX   ", "Generator Tx ", "Bandwidth    ", "Adaptv. Speed", 
                               "Latency      ", "Randomize File", "Decoded on I/O",
-                              "Time Out     ", "Quick Start  ", "Stop/Next/Rep", "Max # of Words", "LoRa Channel  ", "Serial Output", 
-                              "LoRa Band    ",  "LoRa Frequ   ", "RECALLSnapshot", "STORE Snapshot",
+                              "Time Out     ", "Quick Start  ", "Stop/Next/Rep", "Max # of Words", "Serial Output", 
+                              "RECALLSnapshot", "STORE Snapshot",
                               "Calibrate Batt", "Hardware Conf"};                   
   prefPos MorsePreferences::keyerOptions[] =      {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, 
                                     posKeyTrainerMode, posTimeOut, posQuickStart, posSerialOut };
   prefPos MorsePreferences::generatorOptions[] =  {posClicks, posPitch, posExtPaddles, posInterWordSpace, posInterCharSpace, posRandomOption, 
                                     posRandomLength, posCallLength, posAbbrevLength, posWordLength, posMaxSequence, posAutoStop, 
-                                    posTrainerDisplay, posWordDoubler, posKeyTrainerMode, posLoraTrainerMode, posLoraSyncW, posTimeOut, posQuickStart, posSerialOut };
+                                    posTrainerDisplay, posWordDoubler, posKeyTrainerMode, posWifiTrainerMode, posTimeOut, posQuickStart, posSerialOut };
  prefPos MorsePreferences::playerOptions[] =     {posClicks, posPitch, posExtPaddles, posInterWordSpace, posInterCharSpace, posMaxSequence, posAutoStop, posTrainerDisplay, 
-                                     posRandomFile, posWordDoubler, posKeyTrainerMode, posLoraTrainerMode, posLoraSyncW, posTimeOut, posQuickStart,  posSerialOut };
+                                     posRandomFile, posWordDoubler, posKeyTrainerMode, posWifiTrainerMode, posTimeOut, posQuickStart,  posSerialOut };
  prefPos MorsePreferences::echoPlayerOptions[] = {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
                                     posEchoToneShift, posInterWordSpace, posInterCharSpace, posMaxSequence, posRandomFile, posEchoRepeats,  posEchoDisplay, posEchoConf, posTimeOut, 
                                     posQuickStart, posSerialOut};
@@ -138,8 +133,6 @@ const String MorsePreferences::prefOption[] = { "Encoder Click", "Tone Pitch Hz"
                                     posEchoToneShift, posInterWordSpace, posInterCharSpace, posRandomOption, 
                                     posRandomLength, posCallLength, posAbbrevLength, posWordLength, posMaxSequence, posEchoRepeats,  posEchoDisplay, posEchoConf, posSpeedAdapt, posTimeOut, 
                                     posQuickStart, posSerialOut };
- prefPos MorsePreferences::loraTrxOptions[] =    {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
-                                    posEchoToneShift, posTrainerDisplay, posKeyTrainerMode, posExtAudioOnDecode, posTimeOut, posQuickStart, posLoraSyncW, posSerialOut };
  prefPos MorsePreferences::wifiTrxOptions[] =    {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
                                     posEchoToneShift, posTrainerDisplay, posKeyTrainerMode, posExtAudioOnDecode, posTimeOut, posQuickStart, posSerialOut };
  prefPos MorsePreferences::extTrxOptions[] =     {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
@@ -151,7 +144,7 @@ const String MorsePreferences::prefOption[] = { "Encoder Click", "Tone Pitch Hz"
                                     posEchoToneShift, posInterWordSpace, posInterCharSpace, posRandomOption, 
                                     posRandomLength, posCallLength, posAbbrevLength, posWordLength, posMaxSequence, posAutoStop, 
                                     posTrainerDisplay, posRandomFile, posWordDoubler, posEchoRepeats, posEchoDisplay, posEchoConf, 
-                                    posKeyTrainerMode, posLoraTrainerMode, posLoraSyncW, posSpeedAdapt, 
+                                    posKeyTrainerMode, posWifiTrainerMode, posSpeedAdapt, 
                                     posExtAudioOnDecode, posTimeOut, posQuickStart, posSerialOut};
 
 prefPos *MorsePreferences::currentOptions = MorsePreferences::allOptions;
@@ -161,7 +154,6 @@ int MorsePreferences::generatorOptionsSize = SizeOfArray(MorsePreferences::gener
 int MorsePreferences::playerOptionsSize = SizeOfArray(MorsePreferences::playerOptions);
 int MorsePreferences::echoPlayerOptionsSize = SizeOfArray(MorsePreferences::echoPlayerOptions);
 int MorsePreferences::echoTrainerOptionsSize = SizeOfArray(MorsePreferences::echoTrainerOptions);
-int MorsePreferences::loraTrxOptionsSize = SizeOfArray(MorsePreferences::loraTrxOptions);
 int MorsePreferences::wifiTrxOptionsSize = SizeOfArray(MorsePreferences::wifiTrxOptions);
 int MorsePreferences::extTrxOptionsSize = SizeOfArray(MorsePreferences::extTrxOptions);
 int MorsePreferences::decoderOptionsSize = SizeOfArray(MorsePreferences::decoderOptions);
@@ -174,7 +166,7 @@ int currentOptionSize;
 
              
 boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
-  // enum morserinoMode {morseKeyer, loraTrx, morseGenerator, echoTrainer, shutDown, morseDecoder, invalid };
+  // enum morserinoMode {morseKeyer, wifiTrx, morseGenerator, echoTrainer, shutDown, morseDecoder, invalid };
   static int oldPos = 1;
   int t;
 
@@ -257,14 +249,9 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
 
 void MorsePreferences::displayKeyerPreferencesMenu(int pos) {
   MorseOutput::clearDisplay();
-  if (pos < posLoraBand)
+  if (pos < posSnapRecall)
     MorseOutput::printOnStatusLine( true, 0,  "Set Preferences: ");
-  else if (pos < posSnapRecall)
-    MorseOutput::printOnStatusLine( true, 0,  "Config LoRa:     ");
-  else if (pos < posHwConf)
     MorseOutput::printOnStatusLine( true, 0,  "Manage Snapshots:");
-  else 
-    MorseOutput::printOnStatusLine( true, 0,  "Hardware Config. ");
   MorseOutput::printOnScroll(1, BOLD, 0, prefOption[pos]);
   
   switch (pos) {
@@ -314,9 +301,7 @@ void MorsePreferences::displayKeyerPreferencesMenu(int pos) {
                           break;
     case posEchoToneShift:internal::displayEchoToneShift();
                           break;
-    case posLoraTrainerMode:  internal::displayLoraTrainerMode();
-                          break;
-    case posLoraSyncW:    internal::displayLoraSyncW();
+    case posWifiTrainerMode:  internal::displayWifiTrainerMode();
                           break;
     case posSpeedAdapt:   internal::displaySpeedAdapt();
                           break;
@@ -331,10 +316,6 @@ void MorsePreferences::displayKeyerPreferencesMenu(int pos) {
                           break;
     case posAutoStop:     internal::displayAutoStop();
                           break;
-     case  posLoraBand:  internal::displayLoraBand();
-                          break;
-     case  posLoraQRG:  internal::displayLoraQRG();
-                          break; 
      case posSnapRecall: internal::displaySnapRecall();
                           break;
      case posSnapStore: internal::displaySnapStore();
@@ -343,8 +324,6 @@ void MorsePreferences::displayKeyerPreferencesMenu(int pos) {
                           break; 
      case posSerialOut:   internal::displaySerialOut();
                           break;
-     case posHwConf:      internal::displayHwConf();
-                          break;                  
   } /// switch (pos)
   Heltec.display -> display();
 } // displayKeyerPreferences()
@@ -532,31 +511,17 @@ void internal::displayKeyTrainerMode() {
   MorseOutput::printOnScroll(2, REGULAR, 1, option);
 }
 
-void internal::displayLoraTrainerMode() {
+void internal::displayWifiTrainerMode() {
     String option;
-  switch(MorsePreferences::loraTrainerMode) {
+  switch(MorsePreferences::wifiTrainerMode) {
     case 0: option = "Tx OFF       ";
             break;
-    case 1: option = "LoRa Tx ON   ";
-            break;
-    case 2: option = "WiFi Tx ON   ";
+    case 1: option = "WiFi Tx ON   ";
             break;
   }
   MorseOutput::printOnScroll(2, REGULAR, 1, option);
 }
 
-void internal::displayLoraSyncW() {
-    String option;
-  switch(MorsePreferences::loraSyncW) {
-    case 0x27: option = "Standard Ch  ";
-            break;
-    case 0x66: option = "Secondary Ch ";
-            break;
-  }
-  MorseOutput::printOnScroll(2, REGULAR, 1, option);
-}
-
-            
 void internal::displayEchoRepeats() {
   if (MorsePreferences::echoRepeats < 7) {
       sprintf(numBuffer, "%i      ", MorsePreferences::echoRepeats);
@@ -646,37 +611,6 @@ void internal::displaySerialOut() {
       MorseOutput::printOnScroll(2, REGULAR, 1, option);
 }
 
-void internal::displayLoraBand() {
-  String bandName;
-  switch (MorsePreferences::loraBand) {
-      case 0: bandName = "433 MHz ";
-              break;
-      case 1: bandName = "868 MHz ";
-              break;
-      case 2: bandName = "920 MHz ";
-              break;
-  }
-  MorseOutput::printOnScroll(2, REGULAR, 1, bandName);
-}
-
-void internal::displayLoraQRG() {
-  const int a = (int) QRG433;
-  const int b = (int) QRG866;
-  const int c = (int) QRG920;
-   sprintf(numBuffer, "%6d kHz", MorsePreferences::loraQRG / 1000);
-   MorseOutput::printOnScroll(2, REGULAR, 1, numBuffer);
-   
-   switch (MorsePreferences::loraQRG) {
-      case a:
-      case b:
-      case c  : MorseOutput::printOnScroll(2, BOLD, 11,    "DEF");
-                break;
-      default:  MorseOutput::printOnScroll(2, REGULAR, 11, "   ");
-                break;
-   }
-}
-
-
 void internal::displaySnapRecall() {
   if (memCounter) {
     if (memPtr == memCounter)
@@ -699,20 +633,6 @@ void internal::displaySnapStore() {
     sprintf(numBuffer, "Snapshot %d  ", memPtr+1);
     MorseOutput::printOnScroll(2, MorsePreferences::snapShots & mask ? BOLD : REGULAR, 1, numBuffer);
   }
-}
-
-void internal::displayHwConf() {
-  String option;
-  switch (hwConf) {
-    case 1: option = "Calibr. Batt.";
-            break;
-    case 2: option = "LoRa Config. ";
-            break;
-    default:
-            option = "Cancel       ";
-            break;
-    }
-  MorseOutput::printOnScroll(2, REGULAR, 1, option);
 }
 
 //// function to addjust the selected preference
@@ -887,13 +807,10 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                 case  posEchoConf:  MorsePreferences::echoConf = !MorsePreferences::echoConf;
                                 internal::displayEchoConf();
                                 break;
-                case  posLoraTrainerMode: MorsePreferences::loraTrainerMode += (t+3);                   // transmit lora in generator and player mode; can be 0 (no), (loRa) or 2 (WiFi)
-                                MorsePreferences::loraTrainerMode = (MorsePreferences::loraTrainerMode % 3);
-                                internal::displayLoraTrainerMode();
+                case  posWifiTrainerMode: MorsePreferences::wifiTrainerMode += (t+1);                   // transmit wifi in generator and player mode; can be 0 (no) or 1 (WiFi)
+                                MorsePreferences::wifiTrainerMode = (MorsePreferences::wifiTrainerMode % 2);
+                                internal::displayWifiTrainerMode();
                                 break; 
-                case posLoraSyncW: MorsePreferences::loraSyncW = (MorsePreferences::loraSyncW == 0x27 ? 0x66 : 0x27);
-                                internal::displayLoraSyncW();
-                                break;
                 case  posSpeedAdapt: MorsePreferences::speedAdapt = !MorsePreferences::speedAdapt;
                                 internal::displaySpeedAdapt();
                                 break; 
@@ -908,29 +825,6 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                 case posQuickStart: MorsePreferences::quickStart = !MorsePreferences::quickStart;
                                   internal::displayQuickStart();
                                   break;
-                case posLoraBand: MorsePreferences::loraBand += (t+1);                              // set the LoRa band
-                                  MorsePreferences::loraBand = constrain(MorsePreferences::loraBand-1, 0, 2);
-                                  internal::displayLoraBand();                                // display LoRa band
-                                  switch (MorsePreferences::loraBand) {
-                                    case 0:  MorsePreferences::loraQRG = QRG433;
-                                        break;  
-                                    case 1:  MorsePreferences::loraQRG = QRG866;
-                                        break;
-                                    case 2:  MorsePreferences::loraQRG = QRG920;
-                                        break;
-                                  }
-                                  break;
-                case posLoraQRG:  MorsePreferences::loraQRG += (t*1E5);
-                                  switch (MorsePreferences::loraBand) {
-                                    case 0: MorsePreferences::loraQRG = constrain(MorsePreferences::loraQRG, 433.65E6, 434.55E6);
-                                            break;
-                                    case 1: MorsePreferences::loraQRG = constrain(MorsePreferences::loraQRG, 866.25E6, 869.45E6);
-                                            break;
-                                    case 2: MorsePreferences::loraQRG = constrain(MorsePreferences::loraQRG, 920.25E6, 923.15E6);
-                                            break;
-                                  }
-                                  internal::displayLoraQRG();
-                                  break;
                 case posSnapRecall: 
                                   if (memCounter) {
                                       memPtr = (memPtr +t + memCounter + 1) % (memCounter+1);
@@ -942,10 +836,6 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                 case posSnapStore: 
                                   memPtr = (memPtr + t + 9) % 9;
                                   internal::displaySnapStore();
-                                  break;
-                case posHwConf:   hwConf += (t+3);
-                                  hwConf = hwConf % 3;
-                                  internal::displayHwConf();
                                   break;
             }   // end switch(pos)                  
             Heltec.display -> display();                                                      // update the display   
@@ -987,16 +877,6 @@ void MorsePreferences::readPreferences(String repository) {
          pref.putUChar("version_minor", MorsePreferences::version_minor);
  
 
-      if (temp = pref.getUChar("loraBand"))
-        MorsePreferences::loraBand = temp;
-      else
-       MorsePreferences::loraBand = 0;
-  
-      if (tempInt = pref.getUInt("loraQRG")) 
-        MorsePreferences::loraQRG = tempInt;
-      else
-        MorsePreferences::loraQRG = QRG433;
-  
       if (temp = pref.getUChar("snapShots")) {
           MorsePreferences::snapShots = temp;
           updateMemory(temp);
@@ -1106,10 +986,10 @@ void MorsePreferences::readPreferences(String repository) {
        pref.putUChar("echoToneShift", MorsePreferences::echoToneShift);
     
     
-    if ((temp = pref.getUChar("loraTrainerMode")))
-        MorsePreferences::loraTrainerMode = temp;
+    if ((temp = pref.getUChar("wifiTrainerMode")))
+        MorsePreferences::wifiTrainerMode = temp;
     else if (morserino)
-        pref.putUChar("loraTrainerMode", MorsePreferences::loraTrainerMode);
+        pref.putUChar("wifiTrainerMode", MorsePreferences::wifiTrainerMode);
 
     if ((temp = pref.getUChar("latency")))
         MorsePreferences::latency = temp;
@@ -1130,11 +1010,6 @@ void MorsePreferences::readPreferences(String repository) {
        MorsePreferences::timeOut = temp;
     else if (morserino)
        pref.putUChar("timeOut", MorsePreferences::timeOut);
-
-    if ((temp = pref.getUChar("loraSyncW")))
-        MorsePreferences::loraSyncW = temp;
-    else if (morserino)
-        pref.putUChar("loraSyncW", MorsePreferences::loraSyncW);
 
     MorsePreferences::maxSequence = pref.getUChar("maxSequence");
         
@@ -1233,13 +1108,8 @@ void MorsePreferences::writePreferences(String repository) {
         pref.putBool("wordDoubler", MorsePreferences::wordDoubler);
     if (MorsePreferences::speedAdapt != pref.getBool("speedAdapt"))
         pref.putBool("speedAdapt", MorsePreferences::speedAdapt);
-    if (MorsePreferences::loraTrainerMode != pref.getUChar("loraTrainerMode"))
-        pref.putUChar("loraTrainerMode", MorsePreferences::loraTrainerMode);
-    if (MorsePreferences::loraSyncW != pref.getUChar("loraSyncW")) {
-        pref.putUChar("loraSyncW", MorsePreferences::loraSyncW);
-        if (morserino)
-          LoRa.setSyncWord(MorsePreferences::loraSyncW);               
-    }
+    if (MorsePreferences::wifiTrainerMode != pref.getUChar("wifiTrainerMode"))
+        pref.putUChar("wifiTrainerMode", MorsePreferences::wifiTrainerMode);
     if (MorsePreferences::maxSequence != pref.getUChar("maxSequence")) 
         pref.putUChar("maxSequence", MorsePreferences::maxSequence);
     if (MorsePreferences::latency != pref.getUChar("latency"))
@@ -1373,20 +1243,6 @@ void MorsePreferences::clearMemory(uint8_t ptr) {
   MorseOutput::printOnScroll(2, BOLD, 0, text);
   updateMemory(MorsePreferences::snapShots);
   delay(1000);
-}
-
-//////// System Setup / LoRa Setup ///// Called when BALCK knob is pressed @ startup
-
-void MorsePreferences::loraSystemSetup() {
-    MorsePreferences::displayKeyerPreferencesMenu(MorsePreferences::posLoraBand);
-    MorsePreferences::adjustKeyerPreference(MorsePreferences::posLoraBand);
-    MorsePreferences::displayKeyerPreferencesMenu(MorsePreferences::posLoraQRG);
-    MorsePreferences::adjustKeyerPreference(MorsePreferences::posLoraQRG);
-    /// now store chosen values in Preferences
-    pref.begin("morserino", false);             // open the namespace as read/write
-    pref.putUChar("loraBand", MorsePreferences::loraBand);
-    pref.putUInt("loraQRG", MorsePreferences::loraQRG);
-    pref.end();
 }
 
 

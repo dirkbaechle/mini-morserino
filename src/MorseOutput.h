@@ -47,7 +47,6 @@ namespace MorseOutput
   void showVolumeBar(uint16_t mini, uint16_t maxi);
   void drawVolumeCtrl(boolean inverse, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t volume);
   void showVolumeScope(uint16_t mini, uint16_t maxi);
-  void dispLoraLogo();
   void dispWifiLogo();
 
   void resetTOT();

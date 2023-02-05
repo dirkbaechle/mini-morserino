@@ -21,7 +21,7 @@ using namespace MorseMenu;
 //////// variables and constants for the modus menu
 
 
-const uint8_t menuN = 29;     // no of menu items +1
+const uint8_t menuN = 28;     // no of menu items +1
 
 const String menuText [menuN] = {
   "",
@@ -44,21 +44,20 @@ const String menuText [menuN] = {
     "File Player",
   
   "Transceiver",    // 16
-    "LoRa Trx",
     "WiFi Trx",
     "iCW/Ext Trx",
   
-  "CW Decoder",     // 20
+  "CW Decoder",     // 19
 
-  "WiFi Functions", // 21
+  "WiFi Functions", // 20
     "Disp MAC Addr",
     "Config WiFi",
     "Check WiFi",
     "Upload File",
-    "Update Firmw", // 26
-    "Wifi Select", // 27
+    "Update Firmw", // 25
+    "Wifi Select", // 26
   
-  "Go To Sleep" } ; // 28
+  "Go To Sleep" } ; // 27
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
        
@@ -80,19 +79,18 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
     {1,_echoWords,_echoMixed,_echo,0},                    // 13 _echoCalls
     {1,_echoCalls,_echoPlayer,_echo,0},                   // 14 _echoMixed
     {1,_echoMixed,_echoRand,_echo,0},                     // 15 _echoPlayer
-  {0,_echo,_decode,_dummy,_trxLora},                    // 16 _trx
-    {1,_trxIcw,_trxWifi,_trx,0},                          // 17 _trxLora
-    {1,_trxLora,_trxIcw,_trx,0},                          // 18 _trxWifi
-    {1,_trxWifi,_trxLora,_trx,0},                          // 19 _trxIcw
-  {0,_trx,_wifi,_dummy,0},                              // 20 _decode
-  {0,_decode,_goToSleep,_dummy,_wifi_mac},              // 21 _wifi
-    {1,_wifi_select,_wifi_config,_wifi,0},                // 22 _wifi_mac
-    {1,_wifi_mac,_wifi_check,_wifi,0},                    // 23 _wifi_config
-    {1,_wifi_config,_wifi_upload,_wifi,0},                // 24 _wifi_check
-    {1,_wifi_check,_wifi_update,_wifi,0},                 // 25 _wifi_upload
-    {1,_wifi_upload,_wifi_select,_wifi,0},                // 26 _wifi_update
-    {1,_wifi_update,_wifi_mac,_wifi,0},                   // 27 _wifi_select
-  {0,_wifi,_keyer,_dummy,0}                             // 28 _goToSleep
+  {0,_echo,_decode,_dummy,_trxWifi},                    // 16 _trx
+    {1,_dummy,_trxIcw,_trx,0},                          // 17 _trxWifi
+    {1,_trxWifi,_dummy,_trx,0},                          // 18 _trxIcw
+  {0,_trx,_wifi,_dummy,0},                              // 19 _decode
+  {0,_decode,_goToSleep,_dummy,_wifi_mac},              // 20 _wifi
+    {1,_wifi_select,_wifi_config,_wifi,0},                // 21 _wifi_mac
+    {1,_wifi_mac,_wifi_check,_wifi,0},                    // 22 _wifi_config
+    {1,_wifi_config,_wifi_upload,_wifi,0},                // 23 _wifi_check
+    {1,_wifi_check,_wifi_update,_wifi,0},                 // 24 _wifi_upload
+    {1,_wifi_upload,_wifi_select,_wifi,0},                // 25 _wifi_update
+    {1,_wifi_update,_wifi_mac,_wifi,0},                   // 26 _wifi_select
+  {0,_wifi,_keyer,_dummy,0}                             // 27 _goToSleep
 
 };
 
@@ -106,7 +104,6 @@ void MorseMenu::menu_() {
    uint8_t disp = 0;
    int t, command;
    
-    LoRa.idle();
     WiFi.disconnect(true, false);
     active = false;
     cleanStartSettings();
@@ -259,7 +256,7 @@ boolean MorseMenu::menuExec() {                                          // retu
                 firstTime = true;
                 morseState = morseGenerator;
                 showStartDisplay("Generator     ", "Start/Stop:   ", "Paddle | BLACK", 1250);
-                if (MorsePreferences::loraTrainerMode == 2)
+                if (MorsePreferences::wifiTrainerMode == 1)
                   if (!setupWifi())
                     return false;
                 return true;
@@ -288,16 +285,6 @@ boolean MorseMenu::menuExec() {                                          // retu
                 showStartDisplay("Echo Trainer:", "Start:       ", "Press paddle ", 1250);
                 if(MorsePreferences::keyermode == STRAIGHTKEY)
                   keyDecoder.setup();
-                return true;
-                break;
-      case  _trxLora: // LoRa Transceiver
-                generatorMode = RANDOMS;
-                MorsePreferences::setCurrentOptions(MorsePreferences::loraTrxOptions, MorsePreferences::loraTrxOptionsSize);
-                morseState = loraTrx;
-                showStartDisplay("", "Start LoRa Trx", "", 500);
-                clearPaddleLatches();
-                clearText = "";
-                LoRa.receive();
                 return true;
                 break;
       case  _trxWifi: // Wifi Transceiver

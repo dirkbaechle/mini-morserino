@@ -4,19 +4,15 @@
 #include "morsedefs.h"
 
 #define ESP32
-#define WIFI_LoRa_32
+#define WIFI_Kit_32
 
 #if defined(ESP32)
 
 #include <Arduino.h>
-#if defined( WIFI_Kit_32 ) || defined( WIFI_LoRa_32 ) || defined( WIFI_LoRa_32_V2 ) || defined( Wireless_Stick )
+#if defined( WIFI_Kit_32 ) || defined( Wireless_Stick )
 #include <Wire.h>
 #include "oled/SSD1306Wire.h"
-#endif
-
-#if defined( WIFI_LoRa_32 ) || defined( WIFI_LoRa_32_V2 ) || defined( Wireless_Stick ) || defined( Wireless_Stick_Lite ) || defined( Wireless_Bridge )
-	#include <SPI.h>
-	#include "lora/LoRa.h"
+#include <SPI.h>
 #endif
 
 
@@ -26,12 +22,9 @@ class Heltec_ESP32 {
     Heltec_ESP32();
 	~Heltec_ESP32();
 
-    void begin(bool DisplayEnable=true, bool LoRaEnable=true, bool SerialEnable=true, bool PABOOST=true, long BAND=470E6);
-#if defined( WIFI_LoRa_32 ) || defined( WIFI_LoRa_32_V2 ) || defined( Wireless_Stick ) || defined( Wireless_Stick_Lite ) || defined( Wireless_Bridge )
-    LoRaClass LoRa;
-#endif
+    void begin(bool DisplayEnable=true, bool LoRaEnable=false, bool SerialEnable=true, bool PABOOST=false, long BAND=470E6);
 
-#if defined( WIFI_Kit_32 ) || defined( WIFI_LoRa_32 ) || defined( WIFI_LoRa_32_V2 ) || defined( Wireless_Stick )
+#if defined( WIFI_Kit_32 ) || defined( Wireless_Stick )
     SSD1306Wire *display;
 #endif
 

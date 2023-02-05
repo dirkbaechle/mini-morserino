@@ -10,8 +10,6 @@
 #include "abbrev.h"
 #include "english_words.h"
 
-extern int8_t hwConf;
-
 extern String cleanUpProSigns( String &input );
 extern void updateTimings();
 extern String cleanUpProSigns( String &input );
@@ -54,7 +52,7 @@ namespace MorsePreferences
   extern uint8_t echoToneShift;
   extern boolean echoConf;
   extern uint8_t keyTrainerMode;
-  extern uint8_t loraTrainerMode;
+  extern uint8_t wifiTrainerMode;
   extern boolean speedAdapt;
   extern uint8_t latency;
   extern uint8_t randomFile;
@@ -62,7 +60,6 @@ namespace MorsePreferences
   extern uint8_t timeOut;
   extern boolean quickStart;
   extern boolean autoStopMode;
-  extern uint8_t loraSyncW;
   extern uint8_t maxSequence;
   extern uint8_t serialOut;
 
@@ -92,11 +89,6 @@ namespace MorsePreferences
   extern uint8_t promptPause;
   extern uint8_t tLeft;
   extern uint8_t tRight;
-  extern uint8_t loraBand;
- #define QRG433 434.15E6
- #define QRG866 869.15E6
- #define QRG920 920.55E6
-  extern uint32_t loraQRG;
   extern uint8_t snapShots;
   extern uint8_t oledBrightness;
   
@@ -110,10 +102,10 @@ namespace MorsePreferences
                   posEchoToneShift, posInterWordSpace, posInterCharSpace, posRandomOption,
                   posRandomLength, posCallLength, posAbbrevLength, posWordLength,
                   posTrainerDisplay, posWordDoubler, posEchoDisplay, posEchoRepeats,  posEchoConf,
-                  posKeyTrainerMode, posLoraTrainerMode, posSpeedAdapt,
+                  posKeyTrainerMode, posWifiTrainerMode, posSpeedAdapt,
                   posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut, 
-                  posQuickStart, posAutoStop,posMaxSequence, posLoraSyncW,   posSerialOut,
-                  posLoraBand, posLoraQRG, posSnapRecall, posSnapStore, posHwConf
+                  posQuickStart, posAutoStop,posMaxSequence, posSerialOut,
+                  posSnapRecall, posSnapStore
                 };
   
   extern const String prefOption[];
@@ -122,7 +114,6 @@ namespace MorsePreferences
   extern  prefPos playerOptions[];
   extern  prefPos echoPlayerOptions[];
   extern  prefPos echoTrainerOptions[];
-  extern  prefPos loraTrxOptions[];
   extern  prefPos wifiTrxOptions[];
   extern  prefPos extTrxOptions[];
   extern  prefPos decoderOptions[];
@@ -135,7 +126,6 @@ namespace MorsePreferences
   extern int playerOptionsSize;
   extern int echoPlayerOptionsSize;
   extern int echoTrainerOptionsSize;
-  extern int loraTrxOptionsSize;
   extern int wifiTrxOptionsSize;
   extern int extTrxOptionsSize;
   extern int decoderOptionsSize;
@@ -153,7 +143,6 @@ namespace MorsePreferences
   void readPreferences(String repository);
   void writePreferences(String repository);
   void setCustomChars(String);
-  void loraSystemSetup();
   void writeWordPointer();
   void writeVolume();
   void writeLastExecuted(uint8_t menuPtr);
@@ -185,8 +174,7 @@ namespace internal {
   void displayTrainerDisplay();
   void displayEchoDisplay();
   void displayKeyTrainerMode();
-  void displayLoraTrainerMode();
-  void displayLoraSyncW();
+  void displayWifiTrainerMode();
   void displayEchoRepeats();
   void displayEchoToneShift();
   void displayEchoConf();
@@ -198,11 +186,8 @@ namespace internal {
   void displayQuickStart();
   void displayAutoStop();
   void displaySerialOut();
-  void displayLoraBand();
-  void displayLoraQRG();
   void displaySnapRecall();
   void displaySnapStore();
-  void displayHwConf();
 }
 
 #endif

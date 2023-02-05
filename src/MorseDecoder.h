@@ -17,7 +17,6 @@ extern boolean speedChanged;
 
 extern void displayMorse(String, boolean);
 extern void cwForTx (int);
-extern void sendWithLora();
 extern void sendWithWifi();
  
 void keyOut(boolean,  boolean, int, int);
