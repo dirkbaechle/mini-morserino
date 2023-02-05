@@ -29,10 +29,10 @@
 
 /////// Program Name & Version
 
-const String PROJECTNAME = "Morserino-32";
+const String PROJECTNAME = "mini-Morserino";
 
-#define VERSION_MAJOR 4
-#define VERSION_MINOR 4
+#define VERSION_MAJOR 1
+#define VERSION_MINOR 0
 #define VERSION_PATCH 1
 
 #define BETA false
@@ -59,55 +59,37 @@ namespace Buttons
 
 }
 
-///// its is crucial to have the right board version - Boards 2 and 2a (prototypes only) set it to 2, Boards 3 set it to 3
-///// the Board Version 2 is for HEltec Modules V1 only, Board Version 3 for Heltec V2 only
-///// Board version 1 not supported anymore!
-
-
-///#define BOARDVERSION  4
-
 
 ///////////////////////////////      H A R D W A R E      ///////////////////////////////////////////
 //// Here are the definitions for the various hardware-related I/O pins of the ESP32
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-///// Board versions:
-///// 2(a): for Heltec ESP32 LORA Version 1 (Morserino-32 prototypes)
-///// 3: for heltec ESP32 LORA Version 2
-///// Warning: Board version 1 not supported anymore!!!! (was an early prototype)
-/////
-///// the following Pins are dependent on the board version
-///// 13:  V2: leftPin (external paddle, ext. pullup) V3: ?
-///// 38:  V2: not in use                             V3: encoder port (interrupt driven) instead of 35
-///// 32:  V2: used for LoRa internally               V3: leftPin
-///// 33:  V2: used for LoRa internally               V3: rightPin
-
-
-/////// here are the board dependent pins definitions
-
-//// BOARD 3 & 4 differences
 
 
 const int PinResetOled=-1;
 const int PinSDA=5;
 const int PinSCL=4;
 
+
 /// where is the encoder?
-const int PinCLK=38;                   // Used for generating interrupts using CLK signal - needs external pullup resisitor! 
-const int PinDT=39;                    // Used for reading DT signal  - needs external pullup resisitor! 
+const int PinCLK=26;                   // Used for generating interrupts using CLK signal - needs external pullup resisitor! 
+const int PinDT=25;                    // Used for reading DT signal  - needs external pullup resisitor! 
 
 /// encoder switch (BLACK knob)
-const int modeButtonPin = 37;
+const int modeButtonPin = 36;
 
 /// 2nd switch button - toggles between Speed control and Volume control (RED button)
-const int volButtonPin = 0;
+const int volButtonPin = 15;
 
+// external paddle
+const int paddleRight = 2;
+const int paddleLeft = 14;
 
 //// with the following we define which pins are used as output for the two pwm channels
 //// HF output (with varying duticycle and fixed frequency) and LF output (with varying frequency and fixed dutycycle of 50%)
 /// are being added with a 2-transistor AND gate to create a tone frequency with variable frequency and volume
 
-const int LF_Pin = 23;    // for the lower (= NF) frequency generation
-const int HF_Pin = 22;    // for the HF PWM generation
+const int LF_Pin = 39;    // for the lower (= NF) frequency generation
+const int HF_Pin = 16;    // for the HF PWM generation
 
 
 // SENS_FACTOR is used for auto-calibrating sensitivity of touch paddles (somewhere between 2.0 and 2.5)

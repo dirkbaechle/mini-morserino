@@ -340,16 +340,9 @@ void setup()
   delay(10); // give me time to bring up serial monitor
 
 
-  MorsePreferences::determineBoardVersion();
-  // now set pins according to board version
-  if (MorsePreferences::boardVersion == 3) {
-    leftPin = 33;
-    rightPin = 32;
-  } else {        // must be board version 4
-    Buttons::modeButton.activeHigh = HIGH;      // in contrast to board v.3, in v4. the active state is HIGH not LOW
-    leftPin = 32;
-    rightPin = 33;
-  }
+  // now set paddle pins according to board version 3
+  leftPin = paddleLeft;
+  rightPin = paddleRight;
 
 
 // read preferences from non-volatile storage
@@ -505,7 +498,7 @@ void displayStartUp() {
   if (BETA)
     s += " beta";
   MorseOutput::printOnScroll(0, REGULAR, 0, s );
-  MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2022");
+  MorseOutput::printOnScroll(1, REGULAR, 0, "© 2023");
 
   delay(2000);
 }

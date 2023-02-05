@@ -98,8 +98,6 @@ Preferences pref;               // use the Preferences library for storing and r
 
   uint8_t MorsePreferences::snapShots = 0;                    // keep track which snapshots are being used ( 0 .. 7, called 1 to 8)
 
-  uint8_t MorsePreferences::boardVersion = 0;                 // which Morserino board version? v3 uses heltec Wifi Lora V2, V4 uses V2.1
-
   uint8_t MorsePreferences::oledBrightness = 255;
 
 //////// end of variables stored in preferences
@@ -1024,13 +1022,6 @@ void MorsePreferences::readPreferences(String repository) {
       MorsePreferences::fileWordPointer = pref.getUInt("fileWordPtr"); // do not read fileWordPointer from other snapshots! we never write anything there!
     }  // endif morserino
 
-     //board version 4: at this stage we leave it at 0 if not set otherwise, but change it at setup()
-     // no need to read it here, as we read it early at startup
-     //if ((temp = pref.getUChar("boardVersion")))
-     //     MorsePreferences::boardVersion = temp;
-      //else if (morserino)
-      //    pref.putUChar("boardVersion", MorsePreferences::boardVersion);
-          
     if ((temp = pref.getUChar("sidetoneFreq")))
        MorsePreferences::sidetoneFreq = temp;
     else if (morserino)
@@ -1400,31 +1391,6 @@ void MorsePreferences::clearMemory(uint8_t ptr) {
   updateMemory(MorsePreferences::snapShots);
   delay(1000);
 }
-
-///////// read & write board version into NVS memory
-
-void MorsePreferences::determineBoardVersion() {
-    pref.begin("morserino", false);             // open the namespace as read/write
-    MorsePreferences::boardVersion = pref.getUChar("boardVersion");
-    delay(1000);
-    if (MorsePreferences::boardVersion == 0) {                    // no board version had been set previously, so we determine and set it here
-        const int oldbatt = 13;                                     // we measure voltage at pin 13; if V close to zero we have a 2.1 Heltec, so board 4
-        
-        analogSetAttenuation(ADC_0db);
-        adcAttachPin(oldbatt);
-        analogSetClockDiv(128);           //  this value was found by experimenting - no clue what it really does :-(
-        analogSetPinAttenuation(oldbatt,ADC_11db);  
-        if(analogRead(oldbatt) > 1023) {
-          MorsePreferences::boardVersion = 3;
-          // DEBUG("boardV: 3");
-        }
-        else {MorsePreferences::boardVersion = 4; //DEBUG("boardV: 4");
-        }
-        pref.putUChar("boardVersion", MorsePreferences::boardVersion); 
-    }
-    pref.end();
-}
-
 
 //////// System Setup / LoRa Setup ///// Called when BALCK knob is pressed @ startup
 

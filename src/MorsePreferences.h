@@ -153,7 +153,6 @@ namespace MorsePreferences
   void writePreferences(String repository);
   void setCustomChars(String);
   void loraSystemSetup();
-  void determineBoardVersion();
   void calibrateVoltageMeasurement();
   void writeWordPointer();
   void writeVolume();
