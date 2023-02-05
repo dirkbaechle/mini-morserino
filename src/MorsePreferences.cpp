@@ -90,8 +90,6 @@ Preferences pref;               // use the Preferences library for storing and r
   uint8_t MorsePreferences::tLeft = 20;                       // threshold for left paddle
   uint8_t MorsePreferences::tRight = 20;                      // threshold for right paddle
 
-  uint8_t MorsePreferences::vAdjust = 180;                    // correction value: 155 - 250
-  
   uint8_t MorsePreferences::loraBand = 0;                     // 0 = 433, 1 = 868, 2 = 920
 
   uint32_t MorsePreferences::loraQRG = QRG433;                // for 70 cm band
@@ -260,10 +258,8 @@ void MorsePreferences::displayKeyerPreferencesMenu(int pos) {
     MorseOutput::printOnStatusLine( true, 0,  "Set Preferences: ");
   else if (pos < posSnapRecall)
     MorseOutput::printOnStatusLine( true, 0,  "Config LoRa:     ");
-  else if (pos < posVAdjust)
-    MorseOutput::printOnStatusLine( true, 0,  "Manage Snapshots:");
   else if (pos < posHwConf)
-    MorseOutput::printOnStatusLine( true, 0,  "Calibrate Voltage");
+    MorseOutput::printOnStatusLine( true, 0,  "Manage Snapshots:");
   else 
     MorseOutput::printOnStatusLine( true, 0,  "Hardware Config. ");
   MorseOutput::printOnScroll(1, BOLD, 0, prefOption[pos]);
@@ -344,8 +340,6 @@ void MorsePreferences::displayKeyerPreferencesMenu(int pos) {
                           break; 
      case posSerialOut:   internal::displaySerialOut();
                           break;
-     case posVAdjust:     internal::displayVAdjust();
-                          break;  
      case posHwConf:      internal::displayHwConf();
                           break;                  
   } /// switch (pos)
@@ -649,12 +643,6 @@ void internal::displaySerialOut() {
       MorseOutput::printOnScroll(2, REGULAR, 1, option);
 }
 
-void internal::displayVAdjust() {
-  volt = (int16_t) (voltage_raw *  (MorsePreferences::vAdjust * 12.9));   // recalculate millivolts for new adjustment
-  sprintf(numBuffer, "%4d mV", volt);
-  MorseOutput::printOnScroll(2, REGULAR, 1, numBuffer);
-}
-
 void internal::displayLoraBand() {
   String bandName;
   switch (MorsePreferences::loraBand) {
@@ -917,11 +905,6 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                 case posQuickStart: MorsePreferences::quickStart = !MorsePreferences::quickStart;
                                   internal::displayQuickStart();
                                   break;
-                case posVAdjust:
-                                  MorsePreferences::vAdjust += t;
-                                  MorsePreferences::vAdjust = constrain(MorsePreferences::vAdjust, 155, 254);            
-                                  internal::displayVAdjust();
-                                  break;
                 case posLoraBand: MorsePreferences::loraBand += (t+1);                              // set the LoRa band
                                   MorsePreferences::loraBand = constrain(MorsePreferences::loraBand-1, 0, 2);
                                   internal::displayLoraBand();                                // display LoRa band
@@ -1001,9 +984,6 @@ void MorsePreferences::readPreferences(String repository) {
          pref.putUChar("version_minor", MorsePreferences::version_minor);
  
 
-      if (temp = pref.getUChar("vAdjust"))
-        MorsePreferences::vAdjust = temp;
-        
       if (temp = pref.getUChar("loraBand"))
         MorsePreferences::loraBand = temp;
       else
@@ -1404,18 +1384,6 @@ void MorsePreferences::loraSystemSetup() {
     pref.putUChar("loraBand", MorsePreferences::loraBand);
     pref.putUInt("loraQRG", MorsePreferences::loraQRG);
     pref.end();
-}
-
-/////// System Setup / Battery Measurement Calibration  /////// called from system config (black knob at start-up)
-void MorsePreferences::calibrateVoltageMeasurement() {
-  //voltage_raw = volt / 19.2 * MorsePreferences::vAdjust;
-  DEBUG("v_raw: " + String(voltage_raw));
-  MorsePreferences::displayKeyerPreferencesMenu(MorsePreferences::posVAdjust);
-  MorsePreferences::adjustKeyerPreference(MorsePreferences::posVAdjust);
-  pref.begin("morserino", false);             // open the namespace as read/write
-  //DEBUG("Store " + String(MorsePreferences::vAdjust));
-  pref.putUChar("vAdjust", MorsePreferences::vAdjust);
-  pref.end();
 }
 
 

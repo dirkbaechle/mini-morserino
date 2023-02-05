@@ -92,7 +92,6 @@ namespace MorsePreferences
   extern uint8_t promptPause;
   extern uint8_t tLeft;
   extern uint8_t tRight;
-  extern uint8_t vAdjust;
   extern uint8_t loraBand;
  #define QRG433 434.15E6
  #define QRG866 869.15E6
@@ -114,7 +113,7 @@ namespace MorsePreferences
                   posKeyTrainerMode, posLoraTrainerMode, posSpeedAdapt,
                   posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut, 
                   posQuickStart, posAutoStop,posMaxSequence, posLoraSyncW,   posSerialOut,
-                  posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posHwConf
+                  posLoraBand, posLoraQRG, posSnapRecall, posSnapStore, posHwConf
                 };
   
   extern const String prefOption[];
@@ -153,7 +152,6 @@ namespace MorsePreferences
   void writePreferences(String repository);
   void setCustomChars(String);
   void loraSystemSetup();
-  void calibrateVoltageMeasurement();
   void writeWordPointer();
   void writeVolume();
   void writeLastExecuted(uint8_t menuPtr);
@@ -198,7 +196,6 @@ namespace internal {
   void displayQuickStart();
   void displayAutoStop();
   void displaySerialOut();
-  void displayVAdjust();
   void displayLoraBand();
   void displayLoraQRG();
   void displaySnapRecall();

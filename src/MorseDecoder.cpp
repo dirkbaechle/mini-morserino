@@ -14,6 +14,7 @@
 #include "morsedefs.h"
 #include "MorseDecoder.h"
 #include "MorseOutput.h"
+#include "MorsePreferences.h"
 
 extern unsigned long genTimer;      /// needed for echo trainer 
 extern morserinoMode morseState;

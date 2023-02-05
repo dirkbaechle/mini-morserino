@@ -404,9 +404,6 @@ void setup()
          MorsePreferences::adjustKeyerPreference(MorsePreferences::posHwConf);
     
          switch (hwConf) {
-            case 1: 
-                    MorsePreferences::calibrateVoltageMeasurement();
-                    break;
             case 2: MorsePreferences::loraSystemSetup();
                     break;
             default: break;
