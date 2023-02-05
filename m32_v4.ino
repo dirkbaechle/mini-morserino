@@ -266,6 +266,10 @@ uint8_t nextBuRead = 0;
 uint8_t cwTxSerial;                                     /// a 6 bit serial number, start with some random value, will be incremented witch each sent LoRa/WiFi packet
                                                         /// the first two bits in the byte will be the protocol id (CW_TRX_PROTO_VERSION)
 
+///////////// Variable for WiFiTrx
+
+IPAddress peerIP;
+
 
 ////////////////////////////////////////////////////////////////////
 // encoder subroutines
@@ -1757,6 +1761,23 @@ void sendWithLora() {           // hand this string over as payload to the LoRA 
   LoRa.endPacket();
   if (morseState == loraTrx)
       LoRa.receive();
+}
+
+void sendWithWifi() {           // hand this string over as payload to the WiFi transceiver
+  // send packet
+//      const char* peerHost = MorsePreferences::wlanTRXPeer.c_str();
+//      IPAddress peerIP;
+//      if (MorsePreferences::wlanTRXPeer.length() == 0) {
+//          peerHost = "255.255.255.255"; // send to local broadcast IP if not set
+//      }
+//      if (!peerIP.fromString(peerHost)) {    // try to interpret the peer as an ip address...
+//          WiFi.hostByName(peerHost, peerIP); // ...and resolve peer into ip address if that fails
+//      }
+  //DEBUG("Send with WiFi! " + String(cwTxBuffer));
+  MorseWiFi::audp.writeTo((uint8_t*)cwTxBuffer, strlen(cwTxBuffer), peerIP, MORSERINOPORT);
+  //MorseWiFi::udp.beginPacket(peerIP, MORSERINOPORT);
+  //MorseWiFi::udp.print(cwTxBuffer);
+  //MorseWiFi::udp.endPacket();
 }
 
 void onLoraReceive(int packetSize){

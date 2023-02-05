@@ -123,6 +123,7 @@ namespace MorsePreferences
   extern  prefPos echoPlayerOptions[];
   extern  prefPos echoTrainerOptions[];
   extern  prefPos loraTrxOptions[];
+  extern  prefPos wifiTrxOptions[];
   extern  prefPos extTrxOptions[];
   extern  prefPos decoderOptions[];
   extern  prefPos allOptions[];
@@ -135,6 +136,7 @@ namespace MorsePreferences
   extern int echoPlayerOptionsSize;
   extern int echoTrainerOptionsSize;
   extern int loraTrxOptionsSize;
+  extern int wifiTrxOptionsSize;
   extern int extTrxOptionsSize;
   extern int decoderOptionsSize;
   extern int allOptionsSize;

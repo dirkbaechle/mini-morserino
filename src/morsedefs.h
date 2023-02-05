@@ -95,8 +95,6 @@ const int HF_Pin = 16;    // for the HF PWM generation
 // SENS_FACTOR is used for auto-calibrating sensitivity of touch paddles (somewhere between 2.0 and 2.5)
 #define SENS_FACTOR 2.22
 
-//#define BAND    0x433E6  //you can set band here directly,e.g. 868E6,915E6
-
 
 ///////////////////////////////////////// END OF HARDWARE DEFS ////////////////////////////////////////////////////////////////////
 
@@ -147,13 +145,16 @@ enum encoderMode                // define modes for state machine of the various
 
 enum morserinoMode              // the states the morserino can be in - selected intop level menu
   {
-      morseKeyer, loraTrx, morseTrx, morseGenerator, echoTrainer, morseDecoder, shutDown, measureNF, invalid
+      morseKeyer, loraTrx, wifiTrx, morseTrx, morseGenerator, echoTrainer, morseDecoder, shutDown, measureNF, invalid
   };
 
 enum menuNo 
-  {   _dummy, _keyer, _gen, _genRand, _genAbb, _genWords, _genCalls, _genMixed, _genPlayer,
-        _echo, _echoRand, _echoAbb, _echoWords, _echoCalls, _echoMixed, _echoPlayer,
-        _trx, _trxLora, _trxIcw, _decode, _goToSleep 
+  {   _dummy, _keyer, _gen, _genRand, _genAbb, _genWords,
+      _genCalls, _genMixed, _genPlayer, _echo, _echoRand, 
+      _echoAbb, _echoWords, _echoCalls, _echoMixed, _echoPlayer,
+      _trx, _trxLora, _trxWifi, _trxIcw, _decode,
+      _wifi, _wifi_mac, _wifi_config, _wifi_check,
+      _wifi_upload, _wifi_update, _wifi_select, _goToSleep 
   };
 
 enum echoStates 
