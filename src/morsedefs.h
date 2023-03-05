@@ -71,8 +71,8 @@ const int PinSCL=4;
 
 
 /// where is the encoder?
-const int PinCLK=26;                   // Used for generating interrupts using CLK signal - needs external pullup resisitor! 
-const int PinDT=25;                    // Used for reading DT signal  - needs external pullup resisitor! 
+const int PinCLK=26;                   // Used for generating interrupts using CLK signal
+const int PinDT=25;                    // Used for reading DT signal
 
 /// encoder switch (BLACK knob)
 const int modeButtonPin = 36;
@@ -88,7 +88,7 @@ const int paddleLeft = 14;
 //// HF output (with varying duticycle and fixed frequency) and LF output (with varying frequency and fixed dutycycle of 50%)
 /// are being added with a 2-transistor AND gate to create a tone frequency with variable frequency and volume
 
-const int LF_Pin = 39;    // for the lower (= NF) frequency generation
+const int LF_Pin = 13;    // for the lower (= NF) frequency generation
 const int HF_Pin = 16;    // for the HF PWM generation
 
 

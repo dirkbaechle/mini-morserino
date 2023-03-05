@@ -346,14 +346,34 @@ void setup()
   rightPin = paddleRight;
 
 
-// read preferences from non-volatile storage
-// if version cannot be read, we have a new ESP32 and need to write the preferences first
+  // read preferences from non-volatile storage
+  // if version cannot be read, we have a new ESP32 and need to write the preferences first
 
   MorsePreferences::readPreferences("morserino");
 
- 
+  // Configure pins GPIO36 and GPIO39 as digital inputs
+  gpio_config_t io_conf = {};
+  io_conf.intr_type = (gpio_int_type_t) GPIO_PIN_INTR_DISABLE;//disable interrupt
+  io_conf.mode = GPIO_MODE_INPUT;//set as inputmode
+  io_conf.pin_bit_mask = ((1ULL << GPIO_NUM_36) | (1ULL << GPIO_NUM_39));//bit mask of the pins that you want to set,e.g.GPIO15
+  io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;//disable pull-down mode
+  io_conf.pull_up_en = GPIO_PULLUP_DISABLE;//disable pull-up mode
+  gpio_config(&io_conf);//configure GPIO with the given settings
+
+  // The same for output pins
+  // io_conf.intr_type = GPIO_PIN_INTR_DISABLE;//disable interrupt
+  // io_conf.mode = GPIO_MODE_OUTPUT;//set as output mode
+  // io_conf.pin_bit_mask = (1ULL<<18);//bit mask of the pins that you want to set,e.g.GPIO18
+  // io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;//disable pull-down mode
+  // io_conf.pull_up_en = GPIO_PULLUP_DISABLE;//disable pull-up mode
+  // esp_err_t error=gpio_config(&io_conf);//configure GPIO with the given settings
+  // if(error!=ESP_OK){
+  //     printf("error configuring outputs \n");
+  // }
+
+
   // set pinMode (important for board 4, as the same pin is used for battery measurement
-  pinMode(modeButtonPin, INPUT);
+  // pinMode(modeButtonPin, INPUT);
 
   // set up the encoder - we need external pull-ups as the pins used do not have built-in pull-ups!
   pinMode(PinCLK,INPUT_PULLUP);
@@ -381,7 +401,6 @@ void setup()
   encoderPos = 0;           /// this is the encoder position
 
 /// set up for encoder button
-//  pinMode(modeButtonPin, INPUT);
   pinMode(volButtonPin, INPUT_PULLUP);               // external pullup for all GPIOS > 32 with ESP32-LORA
   pinMode(modeButtonPin, INPUT);
                                                      // wake up also works without external pullup! Interesting!
@@ -626,7 +645,7 @@ void loop() {
                 break;
     }
    
-    switch (Buttons::modeButton.clicks) {                                // actions based on enocder button
+    switch (Buttons::modeButton.clicks) {                                // actions based on encoder button
        case -1:   MorseMenu::menu_();                                       // long click exits current mode and goes to top menu
                   return;
        case 1:    if (morseState == morseGenerator || morseState == echoTrainer) {//  start/stop in trainer modi, in others does nothing currently

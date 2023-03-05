@@ -1,6 +1,7 @@
 # mini-morserino
-Stripped down version of the Morserino hardware, for use with a Hailege board
-'0.96" ESP32 OLED ESP-WROOM-32 ESP32 ESP-32' (H-1-1290, was available
+Stripped down version of the Morserino-32 hardware and software (all original work
+by OE1WKL, https://github.com/oe1wkl/Morserino-32), for use with
+a Hailege board '0.96" ESP32 OLED ESP-WROOM-32 ESP32 ESP-32' (H-1-1290, was available
 on Amazon at https://www.amazon.de/dp/B07YKLSKG6, now distributed by hiletgo.com),
 which uses an ESP-32-WROOM module.
 
@@ -36,7 +37,7 @@ So a new assignment for the Hailege board could be:
 | 25 | I | ADC | DT for rotary encoder |
 | 26 | I | ADC | CLK for rotary encoder |
 | 16 | I/O | GPIO | Speaker output (HF PWM) |
-| 39 | I/O | GPIO | Speaker output (LF) |
+| 13 | I/O | GPIO | Speaker output (LF) |
 | 2 | I/O | GPIO, ADC, TOUCH | Right paddle |
 | 14 | I/O | GPIO, ADC, TOUCH | Left paddle |
 | 15 | I/O | GPIO, ADC, TOUCH | Additonal button switch (Vol/Speed) |
