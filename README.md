@@ -7,7 +7,7 @@ which uses an ESP-32-WROOM module.
 
 **DISCLAIMER**: You are currently on the 'main' branch for this project. If you're
 looking for basic infos about the used Hailege board and how to get the OLED display
-going, switch to the 'board_info' branch
+working, switch to the 'board_info' branch
 (https://github.com/dirkbaechle/mini-morserino/tree/board_info) instead, please! 
 
 
@@ -41,3 +41,17 @@ So a new assignment for the Hailege board could be:
 | 2 | I/O | GPIO, ADC, TOUCH | Right paddle |
 | 14 | I/O | GPIO, ADC, TOUCH | Left paddle |
 | 15 | I/O | GPIO, ADC, TOUCH | Additonal button switch (Vol/Speed) |
+
+## Removed features
+
+The following functionality has been removed from the original Morserino-32 sources,
+due to hardware and memory constraints:
+
+* Lora support
+* Larger fonts
+* Koch learning method
+* Battery/voltage status display
+* Audio decoder input, including the Goertzel filter
+* Audio line-out
+* TX keyer line
+* Sensor paddle support
